@@ -8,3 +8,6 @@ https://www.qt.io/download
 
 App base: QGroundControl
 https://github.com/mavlink/qgroundcontrol
+
+Compilation requirements:
+QGC can only be compiled for Windows, Linux, Mac, and Android. The specific build configuration can be seleted when configuring Qt.
