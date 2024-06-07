@@ -64,7 +64,7 @@ QGC_APP_NAME        = "GuardBot"
 QGC_ORG_NAME        = "Guardbot Inc"
 QGC_ORG_DOMAIN      = "Guardbot.org"
 QGC_APP_DESCRIPTION = "Guardbot ground control app build on open source framework provided by QGroundControl dev team"
-QGC_APP_COPYRIGHT = "Copyright (C) 2019 QGroundControl Development Team. All rights reserved. Copyright (C) 2024 GuardBot Inc. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version."
+QGC_APP_COPYRIGHT = "Copyright (C) 2019 QGroundControl Development Team. All rights reserved. Copyright (C) 2024 GuardBot Inc. All rights reserved. This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version. See https://github.com/gwdio/GBot-QGC for the code documentation."
 
 
 WindowsBuild {
