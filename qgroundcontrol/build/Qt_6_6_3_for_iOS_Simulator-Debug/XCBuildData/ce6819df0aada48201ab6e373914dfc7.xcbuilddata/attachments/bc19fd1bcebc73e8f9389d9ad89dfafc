@@ -1,0 +1,2 @@
+#!/bin/sh
+make -C /Volumes/Seagate_Hub/OffloadDev/QGCcontainer/qgroundcontrol/build/Qt_6_6_3_for_iOS_Simulator-Debug -f QGroundControl.xcodeproj/qt_preprocess.mak
