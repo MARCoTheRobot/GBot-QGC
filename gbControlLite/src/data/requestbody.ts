@@ -1,0 +1,73 @@
+export const requestBody = {
+  talkCase: false,
+  dialogText: "",
+  serverLoaded: false,
+  cbtRequest: false,
+  journalAnalysis: {
+    isTrue: false,
+    content: "",
+    userLabels: [],
+  },
+  goodbyeScores: {
+    isTrue: false,
+    preNumber: 50,
+    postNumber: 50,
+  },
+  initialize: false,
+  responseTextOnly: false,
+  cssrsForm: {
+    isTrue: false,
+    responseJSON: {},
+    recommendationMessage: "",
+    highestStep: 0,
+  },
+  sleepRequest: {
+    isTrue: false,
+    playAlarm: false,
+    endAlarm: false,
+    sleepQuality: {},
+    finishSleepProtocol: false,
+  },
+  loginForm: {
+    isTrue: false,
+    firstName: "",
+    lastName: "",
+    password: "",
+  },
+  currentUser: {
+    sessionId: "BfsYmXPMr3Q9x3mOQzSTQEb4PqX2",
+    basicInformation: {
+      "basic-given-name": "Steve",
+      "basic-last-name": "Jacobs",
+      "basic-gender": "null",
+      "basic-age": "null",
+      "basic-emergency-phone-num": ["+12016505096"],
+      "basic-user-phone-num": "12016505096",
+      userID: "BfsYmXPMr3Q9x3mOQzSTQEb4PqX2",
+    },
+    userPersonality: {
+      userRelations: {
+        family: "null",
+      },
+      userClassifications: {
+        "liked-animals": ["cats", "dogs"],
+        "classifications-hobbies": ["gaming"],
+        "classifications-job": "null",
+        "classifications-religion": "null",
+        "classification-ethnicity": "null",
+        "classification-sex-orient": "null",
+      },
+      userGeneral: {
+        spokenLanguage: "en",
+        preferredVoice: "en-US-Standard-D",
+      },
+    },
+    knowsCBT: true,
+    requestTimestamp: "",
+    timestampOffset: 0,
+  },
+  onboardResponse: false,
+  interimSentiment: false,
+  speak: false,
+  speechVoice: "en-US-Standard-D",
+};
