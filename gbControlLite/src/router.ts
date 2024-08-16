@@ -3,34 +3,7 @@ import { RouteRecordRaw, createRouter, createWebHistory } from "vue-router";
 
 import HomeView from "@/pages/HomeView.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
-import InitialScreen from "@/components/InitialScreen.vue";
-import SettingsView from "@/pages/settings/SettingsView.vue";
-import ProfileView from "@/pages/settings/ProfileView.vue";
-import ActivityView from "@/pages/activity/ActivityView.vue";
-import PreferenceView from "@/pages/settings/PreferenceView.vue";
-import MarcoSettingsView from "@/pages/settings/MarcoSettingsView.vue";
-import LinkedAccountView from "@/pages/settings/LinkedAccountView.vue";
-import AboutView from "@/pages/settings/AboutView.vue";
-import WishlistView from "@/pages/wishlist/WishlistView.vue";
-import HomeLayout from "@/layouts/HomeLayout.vue";
-import SignInView from "@/pages/auth/SignInView.vue";
-import SignUpView from "@/pages/auth/SignUpView.vue";
-import ActivityLayout from "@/pages/activity/ActivityLayout.vue";
-import Activity2View from "@/pages/activity/Activity2View.vue";
-import JournalsView from "@/pages/journal/JournalsView.vue";
-import Activity3View from "@/pages/activity/Activity3View.vue";
-import Activity4View from "@/pages/activity/Activity4View.vue";
-import MediaPlayer from "@/pages/MediaPlayer.vue";
-import ScreeningView from "@/pages/ScreeningView.vue";
-import StoreLayout from "@/pages/store/StoreLayout.vue";
-import StoreView from "@/pages/store/StoreView.vue";
-import FacesView from "@/pages/store/FacesView.vue";
-import ChatView from "@/pages/ChatView.vue";
-import MarcoCustomizationView from "@/pages/settings/MarcoCustomizationView.vue";
-
-import TestView from "@/pages/TestView.vue"
-import OnboardingView from "@/pages/OnboardingView.vue";
-import MarcoCustomizationView2 from "./pages/settings/MarcoCustomizationView2.vue";
+// import MapStudio from "./pages/MapStudio.vue";
 
 // const routes: RouteRecordRaw[] = [
 //   {
@@ -140,7 +113,7 @@ const routes: RouteRecordRaw[] = [
                  path: "", name: "home", component: HomeView,
               }
             ]
-          }
+          },
         ]
       }
 ];

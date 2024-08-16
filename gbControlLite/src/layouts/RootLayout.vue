@@ -1,12 +1,18 @@
 <template>
 <Toast />	
 <ConfirmDialog />
+<TranscriptDialog />
 <div class="flex flex-row w-full h-full overflow-hidden">
-	<Menu :model="menuItems" class="w-1/6 bg-gray-800"/>
 	
-	<div class="w-5/6 bg-slate-900 flex-col">
+	<Menu :model="menuItems" class="w-1/6 bg-gray-800">
+		<template #start>	
+			<Image :src="logoImg" alt="logo" />
+		</template>
+	</Menu>
+	
+	<div class="flex-col w-5/6 bg-slate-900">
 		<AppHeader type="internal" />
-		<div class="p-4 h-full overflow-y-auto overflow-x-hidden flex-initial">
+		<div class="flex-initial h-full p-4 overflow-x-hidden overflow-y-auto">
 			<router-view v-slot="{ Component }">
 		<transition name="slide">
 			<component :is="Component" class="w-full" />
@@ -24,6 +30,8 @@
  * if we don't get any then we will show the initial screen we store some info in the local storage
  */
 import useSettingsStore from "@/store/settings";
+import Image from "primevue/image";
+import logoImg from "@/assets/logo.png";
 const settings = useSettingsStore();
 import { ref } from "vue";
 import "swiper/css";
@@ -32,11 +40,12 @@ import Toast from "primevue/toast";
 import ConfirmDialog from "primevue/confirmdialog";
 import Menu from "primevue/menu";
 import AppHeader from "@/layouts/partials/AppHeader.vue";
+import TranscriptDialog from "@/components/TranscriptDialog.vue";
 const toast = useToast();
 toast.add({ severity: "success", summary: "Success Message", detail: `${settings.user}` });
 const menuItems = ref([
-	{ label: "Dashboard", icon: "pi pi-fw pi-home", to: "/" },
-	{ label: "Users", icon: "pi pi-fw pi-users", to: "/users" },
+	{ label: "Robot Mode", icon: "pi pi-fw pi-home", to: "/" },
+	{ label: "Mission Planner", icon: "pi pi-fw pi-map", to: "/users" },
 	{ label: "Settings", icon: "pi pi-fw pi-cog", to: "/settings" },
 ]);
 </script>

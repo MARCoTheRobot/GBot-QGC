@@ -91,11 +91,14 @@
 
       </Sidebar>
       
+  
+
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
+import TranscriptDialog from "@/components/TranscriptDialog.vue";
 import ChatBar from "@/components/chat/ChatBar.vue";
 import Sidebar from "primevue/sidebar";
 import { ref, computed, onBeforeMount, watch } from "vue";

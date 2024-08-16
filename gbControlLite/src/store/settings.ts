@@ -5,6 +5,9 @@ import { reactive, watch } from "vue";
 const settingTemplate: SettingsType = {
   user: { lang: "en", firstTime: true },
   app: { theme: "dark" },
+  transcript: { show: false, messages: [
+    
+  ] },
   avatar: {
     body: { name: "default", type: "svg" },
     head: { name: "default", type: "svg" },
@@ -13,6 +16,7 @@ const settingTemplate: SettingsType = {
     hairColor: { name: "#8d5524", type: "color" },
     irisColor: { name: "#19e0ff", type: "color" },
   },
+  version: 2,
 };
 
 export const settingsTemplate = settingTemplate;
@@ -21,7 +25,8 @@ const useSettingsStore = defineStore("settings", () => {
   const s = JSON.parse(localStorage.getItem("settings") as any);
   const defaultSettings: SettingsType = settingTemplate;
   if (!s) localStorage.setItem("settings", JSON.stringify(defaultSettings));
-  const settings = reactive<SettingsType>(s || defaultSettings);
+  // const settings = reactive<SettingsType>(s || defaultSettings);
+  const settings = reactive<SettingsType>(defaultSettings);
   window.document.documentElement.classList.add(settings.app.theme);
 
   watch(settings, (val, oldVal) => {
