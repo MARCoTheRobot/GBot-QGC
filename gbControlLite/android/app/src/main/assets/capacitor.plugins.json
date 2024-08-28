@@ -1,0 +1,14 @@
+[
+	{
+		"pkg": "@capacitor/preferences",
+		"classpath": "com.capacitorjs.plugins.preferences.PreferencesPlugin"
+	},
+	{
+		"pkg": "@nws/capacitor-udp",
+		"classpath": "com.capacitorjs.plugins.udp.UDPPlugin"
+	},
+	{
+		"pkg": "capacitor-udp",
+		"classpath": "ai.unitree.udp.UdpPlugin"
+	}
+]

@@ -27,6 +27,19 @@
 		<!-- <TranscriptDialog :open="true" /> -->
 	</div>
 
+	
+	<Joystick
+	id="joystick"
+    :size="100"
+	class="fixed bottom-0 right-0"
+    base-color="#9FA9B7"
+    stick-color="linear-gradient(135deg, #515E70 100%, #59687C 0%)"
+    :throttle="100"
+    @start="joystickStartEvent"
+    @stop="joystickStopEvent"
+    @move="joystickMoveEvent"
+  />
+
 </template>
 
 <script setup lang="ts">
@@ -42,7 +55,24 @@ import ConfirmPopup from "primevue/confirmpopup";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import Dock from "primevue/dock";
-import TranscriptDialog from "@/components/TranscriptDialog.vue";
+// import TranscriptDialog from "@/components/TranscriptDialog.vue";
+import Joystick from 'vue-joystick-component'
+
+import useRobotStore from "@/store/robot";
+
+const robot = useRobotStore();
+
+const joystickStartEvent = () => {
+	console.log('start')
+}
+const joystickStopEvent = () => {
+	console.log('stop')
+}
+const joystickMoveEvent = ({x, y, direction, distance}) => {
+	console.log(x, y, direction, distance);
+	robot.joystick = [x, y];
+	// robot.useSendJoystick([x,y]);
+}
 const confirm = useConfirm();
 // import MarcoAvatar from '@/components/marco-avatar.vue';
 import { storeToRefs } from "pinia";
@@ -176,5 +206,10 @@ onMounted(() => {
 	syntax: "<angle>";
 	inherits: true;
 	initial-value: 0turn;
+}
+
+#joystick .joystick__stick{
+background: linear-gradient(135deg, #515E70 100%, #59687C 0%);
+box-shadow: 1px 1px 2px 0px rgba(122, 142, 169, 0.30) inset, -1px -1px 2px 0px rgba(48, 56, 67, 0.50) inset, -9px 9px 18px 0px rgba(48, 56, 67, 0.20), 9px -9px 18px 0px rgba(48, 56, 67, 0.20), -9px -9px 18px 0px rgba(122, 142, 169, 0.90), 9px 9px 23px 0px rgba(48, 56, 67, 0.90);
 }
 </style>

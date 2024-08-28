@@ -3,6 +3,7 @@ import { RouteRecordRaw, createRouter, createWebHistory } from "vue-router";
 
 import HomeView from "@/pages/HomeView.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
+import TestView from "@/pages/TestView.vue";
 // import MapStudio from "./pages/MapStudio.vue";
 
 // const routes: RouteRecordRaw[] = [
@@ -115,6 +116,9 @@ const routes: RouteRecordRaw[] = [
             ]
           },
         ]
+      },
+      {
+        path: "/test", name: "test", component: TestView,
       }
 ];
 

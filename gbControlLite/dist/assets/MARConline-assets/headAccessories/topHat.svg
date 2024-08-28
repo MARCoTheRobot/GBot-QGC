@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 240 240" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:bevel;">
+    <g id="HeadAccessoryGroup">
+        <circle id="headAccessMatingPin" cx="120.018" cy="234.921" r="2.591" style="fill:#ebebeb;"/>
+        <rect id="rect815" x="0.525" y="199.613" width="238.357" height="39.357" style="stroke:#3e3e3e;stroke-width:0.35px;"/>
+        <rect id="rect815-7" x="28.294" y="180.9" width="187.364" height="18.661" style="fill:#d32323;"/>
+        <rect id="rect815-2" x="28.458" y="4.326" width="187.037" height="176.41" style="stroke:#3e3e3e;stroke-width:0.66px;"/>
+        <rect id="rect847" x="48.992" y="4.165" width="40.406" height="176.164" style="fill:#7f7777;fill-opacity:0.34;"/>
+        <rect id="rect847-9" x="48.487" y="199.395" width="40.406" height="41.309" style="fill:#7f7777;fill-opacity:0.34;"/>
+    </g>
+</svg>

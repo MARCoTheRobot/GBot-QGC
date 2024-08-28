@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>713994289875-6qluc6j0gippu71fg6gvo60qu0iu5168.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.713994289875-6qluc6j0gippu71fg6gvo60qu0iu5168</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>713994289875-e002t1osge66avnoigh6pf070jq750ps.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDc7D8omP-Ewju3Um4BYl71HJXuBLg-sCA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>713994289875</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.guardbot.app12</string>
+	<key>PROJECT_ID</key>
+	<string>newagent-e3a67</string>
+	<key>STORAGE_BUCKET</key>
+	<string>newagent-e3a67.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:713994289875:ios:cff0858115877490360a26</string>
+	<key>DATABASE_URL</key>
+	<string>https://newagent-e3a67.firebaseio.com</string>
+</dict>
+</plist>

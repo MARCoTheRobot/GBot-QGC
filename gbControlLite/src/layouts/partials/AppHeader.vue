@@ -6,9 +6,9 @@
       <IconVideo class="w-8 h-8" />
       <span class="w-4 h-4 bg-green-500 rounded-full"></span>
       <IconScooterElectric class="w-8 h-8"/>
-      <span class="w-4 h-4 bg-green-500 rounded-full"></span>
+      <span :class="`w-4 h-4 ${robot.motorsActive ? 'bg-green-500':'bg-red-500'} rounded-full`"></span>
       <IconVolume class="w-8 h-8"/>
-      <span class="w-4 h-4 bg-red-500 rounded-full"></span>
+      <span :class="`w-4 h-4 bg-red-500 rounded-full`"></span>
       <IconTextCaption class="w-8 h-8"/>
       <span class="w-4 h-4 bg-red-500 rounded-full"></span>
 
@@ -45,9 +45,10 @@ import {
 import Button from "primevue/button";
 import Sidebar from "primevue/sidebar";
 import { ref } from "vue";
-import useUserStore from "@/store/user";
+import useRobotStore from "@/store/robot";
 
-const userStore = useUserStore();
+const robot = useRobotStore();
+
 
 const sidebarVisible = ref(false);
 const settings = useSettingsStore();
