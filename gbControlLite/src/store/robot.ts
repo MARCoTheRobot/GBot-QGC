@@ -145,6 +145,30 @@ const useRobotStore = defineStore("robot", () => {
     lastMotorSpeedTime.value = Date.now();
   }
 
+  /**
+   * ---------------------
+   * POWER MANAGEMENT
+   * ---------------------
+   */
+
+  /**
+   * @function shutdown
+   * @param none
+   * @description - Sends a shutdown command to the robot
+   */
+  const shutdown = () => {
+    camComm.sendS(Buffer.concat([dataPrefix['json_data'], Buffer.from(JSON.stringify({"shutdown":true}), 'utf-8')]));
+  }
+
+  /**
+   * @function reboot
+   * @param none
+   * @description - Sends a reboot command to the robot
+   */
+  const reboot = () => {
+    camComm.sendS(Buffer.concat([dataPrefix['json_data'], Buffer.from(JSON.stringify({"reboot":true}), 'utf-8')]));
+  }
+
   
 
 
@@ -157,7 +181,8 @@ const useRobotStore = defineStore("robot", () => {
     motorSpeeds,
     motorSpeedData,
     motorsActive,
-
+    shutdown,
+    reboot
   };
 });
 

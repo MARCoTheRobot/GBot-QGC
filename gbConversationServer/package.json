@@ -1,0 +1,12 @@
+{
+  "name": "guardbot-qgc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/apikeys": "^1.3.0",
+    "@google-cloud/dialogflow-cx": "^4.8.0",
+    "pb-util": "^1.0.3",
+    "uuid": "^10.0.0"
+  }
+}

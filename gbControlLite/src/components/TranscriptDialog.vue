@@ -95,7 +95,7 @@ console.log("transcript", transcript);
 
 const { mutate } = useMutation({
     mutationFn: async (text: string) => {
-        return  http({url:"https://commandconversation-kl3exemiua-uc.a.run.app", method: "POST", data:{ text:text, sessionID: "1234" }});
+        return  http({url:"https://us-central1-guardbot-qgc.cloudfunctions.net/commandConversation", method: "POST", data:{ text:text, sessionID: "1234" }});
     },
 
     onMutate: (text: string) => {
