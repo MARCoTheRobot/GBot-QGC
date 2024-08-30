@@ -15,5 +15,5 @@ export default defineConfig({
     host: true,
     port: 8080,
   },
-  envPrefix: ["APP_"],
+  envPrefix: ["APP_", "VUE_APP_"],
 });
