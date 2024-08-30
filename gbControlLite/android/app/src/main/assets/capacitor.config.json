@@ -1,5 +1,5 @@
 {
-	"appId": "org.guardbot.app1",
+	"appId": "org.guardbot.app3",
 	"appName": "GuardBot Ground Control",
 	"bundledWebRuntime": false,
 	"npmClient": "npm",
@@ -7,17 +7,6 @@
 	"plugins": {
 		"SplashScreen": {
 			"launchShowDuration": 0
-		},
-		"FirebaseAuthentication": {
-			"skipNativeAuth": true,
-			"providers": [
-				"apple.com",
-				"google.com",
-				"facebook.com",
-				"twitter.com",
-				"microsoft.com",
-				"yahoo.com"
-			]
 		},
 		"LocalNotifications": {
 			"smallIcon": "ic_stat_icon_config_sample",
@@ -34,7 +23,9 @@
 			"capacitor://localhost"
 		],
 		"url": "http://192.168.1.208:8080/",
-		"cleartext": true
+		"cleartext": true,
+		"androidScheme": "https",
+		"iosScheme": "https"
 	},
 	"serverPROD": {
 		"allowNavigation": [

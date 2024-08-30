@@ -21,6 +21,7 @@ const useRobotStore = defineStore("robot", () => {
   const route = useRoute();
   const router = useRouter();
   const toast = useToast();
+  
 
   const dataPrefix = {
     video: Buffer.from("\x00"),
@@ -35,8 +36,12 @@ const useRobotStore = defineStore("robot", () => {
     audio: 2,
   };
 
-  const state = ref(null);
-  let stateSendInterval = null;
+  const state = ref(0);
+  let stateSendInterval = setInterval(() => {
+    if(typeof(state.value) === 'number' && state.value > -1){
+      camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
+    }
+  }, 100);
 
   /**
    * ---------------------
@@ -69,20 +74,23 @@ const useRobotStore = defineStore("robot", () => {
   // Define cam_comm states
   const internalTemperature = ref<number>(0);
   const cpuTemperature = ref<number>(0);
-  const pitch = ref<number>(0);
   const m1Speed = ref<number>(0);
   const m2Speed = ref<number>(0);
   const robotRoll = ref<number>(0);
   const transcript = ref<string>("");
   const lastVideoTime = ref<any>(0);
   const MAX_VIDEO_TIMEOUT = 2;
+  const videoBuffer = ref<any>("");
 
-  const camCommData = (data: Buffer) => {
+  const camCommData = (data: any) => {
+    // console.log("Received data:", data.toString());
     const dataPrefix2 = data.slice(0, 1);
     data = data.slice(1);
 
     if (dataPrefix2.equals(dataPrefix["video"])) {
       // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
+      // console.log("Received video data");
+      videoBuffer.value = data;
       lastVideoTime.value = Date.now();
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
@@ -110,14 +118,28 @@ const useRobotStore = defineStore("robot", () => {
     }
   };
 
-  const videoActive = computed(() => {
-    return Date.now() - lastVideoTime.value < MAX_VIDEO_TIMEOUT;
+  const videoActive = ref(false);
+  const videoActiveTimeout = ref<any>(0);
+  watch(videoBuffer, (newVideoBuffer) => {
+    try{
+      clearTimeout(videoActiveTimeout.value);
+    }
+    catch(e){
+      // console.log(e);
+    }
+    if (newVideoBuffer) {
+      videoActive.value = true;
+      videoActiveTimeout.value = setTimeout(() => {
+        videoActive.value = false;
+      }, MAX_VIDEO_TIMEOUT * 1000);
+    }
   });
 
   const connectionPassword = ref("HARV7");
 
-  // const camComm = new EComm(["16.170.39.119",8043], "v" + connectionPassword.value, false); // for live usage
+  // const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
   const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
+  camComm.initialize();
   // const audioComm = new EComm(["16.170.39.119",8044], "a" + connectionPassword.value, false);
   camComm.receiveLoop((data) => {
     console.log("Received:", data);
@@ -140,9 +162,9 @@ const useRobotStore = defineStore("robot", () => {
   // };
   // When the joystick is updated, send the new joystick data to the robot
   watch(joystick, (newJoystick) => {
-    console.log("Joystick updated:", newJoystick);
-    const data = JSON.stringify(newJoystick);
-    console.log("Sending data AAAAA:", data);
+    // console.log("Joystick updated:", newJoystick);
+    const data = JSON.stringify({"controls":newJoystick});
+    // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
     console.log("Returning the data to string AAAAA:", bufferData.toString());
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
@@ -187,7 +209,7 @@ const useRobotStore = defineStore("robot", () => {
    */
   const useMotorOverride = (data: any) => {
     console.log("Motor override:", data);
-    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify(data), "utf-8")]));
+    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({"controls":data}), "utf-8")]));
   }
 
   let motorOverrideInterval = 0;
@@ -273,7 +295,7 @@ const useRobotStore = defineStore("robot", () => {
 
         motorOverrideInterval = setInterval(() => {
           if (currSeconds < secondsRequired) {
-            useMotorOverride({ m1: direction[0], m2: direction[1] });
+            useMotorOverride([ direction[0], direction[1] ]);
             currSeconds += 0.5;
           } else {
             clearInterval(motorOverrideInterval);
@@ -340,11 +362,11 @@ const useRobotStore = defineStore("robot", () => {
     videoActive,
     internalTemperature,
     cpuTemperature,
-    pitch,
     m1Speed,
     m2Speed,
     robotRoll,
     transcript,
+    videoBuffer,
     // useSendJoystick,
     motorSpeeds,
     motorSpeedData,

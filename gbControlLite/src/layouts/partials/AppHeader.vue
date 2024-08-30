@@ -23,7 +23,7 @@
 
       <!--Robot Pitch-->
       <IconAngle class="w-8 h-8"/>
-      <span class="w-4 h-4 rounded-full">{{ robot.pitch.toFixed(1) }}°</span>
+      <span class="w-4 h-4 rounded-full">{{ robot.robotRoll.toFixed(1) }}°</span>
 
       <!--External temperature-->
       <IconThermometer class="w-8 h-8"/>

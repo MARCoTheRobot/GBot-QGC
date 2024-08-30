@@ -1,8 +1,8 @@
 <template>
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		<!--Video display-->
-		<div class="fixed top-0 right-0 w-[83.333%] h-screen overflow-hidden z-0">
-			<Image :src="`data:image/jpeg;base64,${robot.videoBuffer}/wpxa3YH//Z`" alt="PrimeVue logo" class="w-screen h-screen" />
+		<div class="fixed top-0 right-0 w-[78.333%] h-screen overflow-hidden z-0">
+			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}/wpxa3YH//Z`" alt="PrimeVue logo" class="w-screen h-screen" />
 
 		</div>
 		

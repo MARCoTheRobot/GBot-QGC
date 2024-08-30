@@ -18,7 +18,8 @@ export class EComm {
     constructor(targetAddress: [string, number], id: string, isRobot: boolean) {
         this.serverAddress = targetAddress;
         this.connectId = Buffer.from(`<${id}>`);
-        this.isRobot = isRobot;
+        // this.isRobot = isRobot;
+        this.isRobot = false; // This is the client app
         this.sockID = 1; // Initialize to 1
         this.id = id;
         
@@ -82,26 +83,34 @@ export class EComm {
         let lastAckTime = 0;
         const maxAckTime = 1;
         UDP.addListener('receive', (data:any) => {
-            console.log("Received data");
+            console.log("Received data, data:", data);
+            const data1 = Buffer.from(data.buffer, 'base64');
             const rinfo = {address: this.serverAddress[0], port: this.serverAddress[1]};
             if ((rinfo.address === this.serverAddress[0] && rinfo.port === this.serverAddress[1]) || true) {
-                const decodeData = data.slice(0, this.connectId.length).toString();
-                if (this.connectId.equals(data.slice(decodeData.indexOf('<'), decodeData.indexOf('>') + 1))) {
-                    data = data.slice(decodeData.indexOf('>') + 1);
-                    const dataTarget = data.slice(0, 1);
-                    data = data.slice(1);
+                console.log("Made it to decode data");
+                const decodeData = data1.slice(0, this.connectId.length).toString();
+                console.log("Decoded data:", decodeData);
+                if (this.connectId.equals(data1.slice(decodeData.indexOf('<'), decodeData.indexOf('>') + 1)) || true) {
+                    console.log("Made it to step 2");
+
+                    let data2 = data1.slice(decodeData.indexOf('>') + 1);
+                    const dataTarget = data2.slice(0, 1);
+                    data2 = data2.slice(1);
+
+                    console.log("Data target:", dataTarget, "Data Prefix:", this.dataPrefix['data']);
 
                     if (dataTarget.equals(this.dataPrefix['data'])) {
-                        recvFunction(data);
-                        this.lastReceiveTime = Date.now() / 1000;
+                        recvFunction(data2);
+                        this.lastReceiveTime = Date.now();
                     } else if (dataTarget.equals(this.dataPrefix['connection_check'])) {
-                        this.send(Buffer.concat([this.dataPrefix['ack'], data]));
+                        this.send(Buffer.concat([this.dataPrefix['ack'], data1]));
                     } else if (dataTarget.equals(this.dataPrefix['ack'])) {
                         lastAckTime = Date.now() / 1000;
                         try {
                             this.latencyMillis = (Date.now() / 1000 - parseFloat(data.toString())) * 1000;
                         } catch (error) {
                             // could not convert float (data)
+
                         }
                     }
                 }
@@ -125,6 +134,7 @@ export class EComm {
 
     public async initialize(): Promise<number> {
         this.sock = UDP.create({properties: {name: this.id, bufferSize:65536}});
+        console.log("The address port is:", this.serverAddress[1]);
         await UDP.bind({socketId: this.sockID, port: this.serverAddress[1]});
         
         console.log("Initializing");
