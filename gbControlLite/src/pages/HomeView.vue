@@ -2,20 +2,20 @@
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		<!--Video display-->
 		<div class="fixed top-0 right-0 w-[83.333%] h-screen overflow-hidden z-0">
-			<video class="w-screen h-screen" autoplay muted loop>
-				<source src="/assets/vid/gbot-camera-view.mp4" type="video/mp4" />
-				Your browser does not support the video tag.
-			</video>
+			<Image :src="`data:image/jpeg;base64,${robot.videoBuffer}/wpxa3YH//Z`" alt="PrimeVue logo" class="w-screen h-screen" />
+
 		</div>
 		
 		<!--Quick controls dock-->
 		<Dock :model="dockItems" position="bottom" class="z-1">
 			<template #icon="{ item }">
-				<div class="w-full" @click="item.action($event)">
+				<div class="w-full" @click="item.action($event)" aria-haspopup="true" aria-controls="overlay_menu">
 				<img :src="item.icon" alt="icon" class="w-full" />
 				</div>
 			</template>
 		</Dock>
+		<Menu ref="settingsMenu" id="overlay_menu" :model="menuItems" :popup="true" />
+
 
 		<!--Confirm video recording popup-->
 		<ConfirmPopup group="recording">
@@ -55,8 +55,10 @@ import ConfirmPopup from "primevue/confirmpopup";
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import Dock from "primevue/dock";
+import Image from "primevue/image";
 // import TranscriptDialog from "@/components/TranscriptDialog.vue";
 import Joystick from 'vue-joystick-component'
+import Menu from "primevue/menu";
 
 import useRobotStore from "@/store/robot";
 
@@ -78,6 +80,8 @@ const confirm = useConfirm();
 import { storeToRefs } from "pinia";
 const toast = useToast();
 const router = useRouter();
+
+const settingsMenu = ref();
 
 // Create the dock items for quick controls of the robot
 const dockItems = ref<any>([
@@ -143,12 +147,12 @@ const dockItems = ref<any>([
     },
 			];
 
-			const addInterval = setInterval(() => {
-				settings.transcript.messages.push(nextMessages.shift());
-				if(nextMessages.length === 0){
-					clearInterval(addInterval);
-				}
-			}, 2000);
+			// const addInterval = setInterval(() => {
+			// 	settings.transcript.messages.push(nextMessages.shift());
+			// 	if(nextMessages.length === 0){
+			// 		clearInterval(addInterval);
+			// 	}
+			// }, 2000);
 		}
 	},
 	{
@@ -158,8 +162,45 @@ const dockItems = ref<any>([
 	{
 		icon: Settings3D,
 		label: "Settings",
+		action: (event) =>{
+			settingsMenu.value.toggle(event)
+		}
 	}
 ]);
+
+const menuItems = [
+	{
+		label: "Manual Control",
+		icon: "pi pi-sliders-v",
+		command: () => {
+			robot.state = robot.states['manual'];
+		},
+	},
+	{
+		label: "Audio",
+		icon: "pi pi-volume",
+		command: () => {
+			robot.state = robot.states['audio'];
+		},
+	},
+	{
+		label:'Reboot',
+		icon:'pi pi-refresh',
+		command: () => {
+			robot.reboot();
+			toast.add({severity:'info', summary:'Rebooting', life:3000});
+		}
+	},
+	{
+		label:'Shutdown',
+		icon:'pi pi-power-off',
+		command: () => {
+			robot.shutdown();
+			toast.add({severity:'warn', summary:'Shutting down...', life:3000});
+
+		}
+	}
+]
 
 const transcriptVisible = ref<boolean>(false);
 
@@ -168,6 +209,7 @@ const transcriptVisible = ref<boolean>(false);
 onMounted(() => {
 	// Once the home screen mounts, ping the robot
 	// userStore.pingBot();
+	// robot.camComm.initialize();
 })
 
 

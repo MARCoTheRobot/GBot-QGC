@@ -26,7 +26,6 @@
     "axios": "^1.7.2",
     "buffer": "^6.0.3",
     "capacitor": "^0.5.6",
-    "capacitor-udp": "^0.2.0",
     "chroma-js": "^2.4.2",
     "clsx": "^2.1.0",
     "comlink": "^4.3.1",

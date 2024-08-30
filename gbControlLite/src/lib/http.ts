@@ -18,10 +18,11 @@ http.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    console.error("Error in response", error);
     if (error.response)
       import.meta.env.DEV &&
         console.error(`[RES] [${error.response.config.method?.toUpperCase()}] ${error.response.config.url}`, { status: error.response.status, response: error.response.data });
-    else console.error(`[RES] [${error.response.config.method?.toUpperCase()}] ${error.response.config.url}`, error.message);
+    else console.error(`[RES] [${error.response.config?.method?.toUpperCase()}] ${error.response.config?.url}`, error.message);
 
     if (error?.response?.data) return Promise.reject(error?.response?.data);
     return Promise.reject({ message: error.message });

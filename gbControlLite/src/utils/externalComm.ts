@@ -50,9 +50,9 @@ export class EComm {
             const prefix = this.isRobot ? Buffer.concat([this.dataPrefix["robot"], this.dataPrefix["client"]]) : Buffer.concat([this.dataPrefix["client"], this.dataPrefix["robot"]]);
             // this.sock.send(Buffer.concat([prefix, data]), address[1], address[0]);
             const concatenatedBuffer = Buffer.concat([prefix, data]);
-            console.log("the concatenated buffer:", concatenatedBuffer);
+            // console.log("the concatenated buffer:", concatenatedBuffer);
             const bufferString = concatenatedBuffer.toString('base64');
-            console.log("Sending data 123:", bufferString);
+            // console.log("Sending data 123:", bufferString);
             UDP.send({socketId: this.sockID, address: address[0], port: address[1], buffer: bufferString});
         } catch (error) {
             if (error.code === 'EAI_AGAIN') {
@@ -64,8 +64,8 @@ export class EComm {
     }
 
     public send(data: Buffer): number {
-        console.log("Sending data BBBB:", data);
-        console.log('Returning data to string BBBB:', data.toString());
+        // console.log("Sending data BBBB:", data);
+        // console.log('Returning data to string BBBB:', data.toString());
         return this._send(Buffer.concat([this.connectId, data]), this.serverAddress);
     }
 
@@ -120,7 +120,7 @@ export class EComm {
             this.connectionStatus = Date.now() / 1000 - lastAckTime < maxAckTime;
 
             
-        }, 10000);
+        }, 500);
     }
 
     public async initialize(): Promise<number> {
