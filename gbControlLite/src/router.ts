@@ -1,5 +1,7 @@
 // router.ts
 import { RouteRecordRaw, createRouter, createWebHistory } from "vue-router";
+// @ts-ignore
+import routeInterceptor from "./krata/router/routeInterceptor";
 
 import HomeView from "@/pages/HomeView.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
@@ -104,27 +106,48 @@ import TestView from "@/pages/TestView.vue";
 
 const routes: RouteRecordRaw[] = [
   {
-        path: "/",
-        component: RootLayout,
+    path: "/",
+    component: RootLayout,
+    children: [
+      {
+        path: "",
         children: [
           {
             path: "",
-            children: [
-              {
-                 path: "", name: "home", component: HomeView,
-              }
-            ]
+            name: "home",
+            component: HomeView,
           },
-        ]
+        ],
       },
-      {
-        path: "/test", name: "test", component: TestView,
-      }
+    ],
+  },
+  {
+    path: "/map",
+    name: "map",
+    component: () => import("@/pages/MapView.vue"),
+  },{
+		path: "/test", name: "test", component: TestView,
+	}
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(routeInterceptor);
+// checks for PWA updates on route change
+router.afterEach(() => {
+  try {
+    window.navigator.serviceWorker.getRegistrations().then((regs) =>
+      regs.forEach((reg) => {
+        reg.update();
+      })
+    );
+  } catch (error) {
+    console.log(`Unable to check for updates on route change`);
+    console.error(error);
+  }
 });
 
 export default router;

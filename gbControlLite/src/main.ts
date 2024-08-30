@@ -14,17 +14,28 @@ import english from "./lib/locales/english";
 import filipino from "./lib/locales/filipino";
 import { createPinia } from "pinia";
 import { I18nLangType, I18nMessageType } from "./types/lang.type";
-import Vue3Lottie from 'vue3-lottie'
+import Vue3Lottie from "vue3-lottie";
 import ConfirmationService from "primevue/confirmationservice";
+
+import RouterPrefetch from "vue-router-prefetch";
+// @ts-ignore
+import { store } from "./krata/store";
+import VueClickAway from "vue3-click-away";
+import VueLazyLoad from 'vue3-lazyload'
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import './registerServiceWorker'
+
 
 import "primeicons/primeicons.css";
 import Ripple from "primevue/ripple";
+
 
 const app = createApp(App);
 
 app.use(VueQueryPlugin);
 app.use(router);
-app.use(Vue3Lottie, { name: 'Vue3Lottie' });
+app.use(Vue3Lottie, { name: "Vue3Lottie" });
 // store setup
 const pinia = createPinia();
 app.use(pinia);
@@ -52,5 +63,11 @@ app.directive("ripple", Ripple);
 
 app.use(ToastService);
 app.use(ConfirmationService);
+
+app.use(RouterPrefetch);
+app.use(store);
+app.use(VueClickAway);
+app.use(VueLazyLoad);
+app.use(Toast, {});
 
 app.mount("#app");
