@@ -5,6 +5,7 @@ import routeInterceptor from "./krata/router/routeInterceptor";
 
 import HomeView from "@/pages/HomeView.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
+import TestView from "@/pages/TestView.vue";
 // import MapStudio from "./pages/MapStudio.vue";
 
 // const routes: RouteRecordRaw[] = [
@@ -124,7 +125,9 @@ const routes: RouteRecordRaw[] = [
     path: "/map",
     name: "map",
     component: () => import("@/pages/MapView.vue"),
-  },
+  },{
+		path: "/test", name: "test", component: TestView,
+	}
 ];
 
 const router = createRouter({

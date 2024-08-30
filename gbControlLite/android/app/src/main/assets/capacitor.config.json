@@ -1,0 +1,52 @@
+{
+	"appId": "org.guardbot.app1",
+	"appName": "GuardBot Ground Control",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "dist",
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0
+		},
+		"FirebaseAuthentication": {
+			"skipNativeAuth": true,
+			"providers": [
+				"apple.com",
+				"google.com",
+				"facebook.com",
+				"twitter.com",
+				"microsoft.com",
+				"yahoo.com"
+			]
+		},
+		"LocalNotifications": {
+			"smallIcon": "ic_stat_icon_config_sample",
+			"iconColor": "#488AFF"
+		}
+	},
+	"server": {
+		"allowNavigation": [
+			"app.marcohealthtech.com/*",
+			"*.marcohealthtech.com",
+			"https://app.marcohealthtech.com/?isreact=true",
+			"*",
+			"localhost",
+			"capacitor://localhost"
+		],
+		"url": "http://192.168.1.208:8080/",
+		"cleartext": true
+	},
+	"serverPROD": {
+		"allowNavigation": [
+			"app.marcohealthtech.com/*",
+			"*.marcohealthtech.com",
+			"https://app.marcohealthtech.com/?isreact=true",
+			"*",
+			"localhost",
+			"capacitor://localhost"
+		],
+		"hostname": "localhost",
+		"iosScheme": "https",
+		"androidScheme": "https"
+	}
+}

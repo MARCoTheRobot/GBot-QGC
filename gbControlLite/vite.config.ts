@@ -4,10 +4,11 @@ import vue from "@vitejs/plugin-vue";
 // @ts-ignore
 import eslintPlugin from "vite-plugin-eslint"; // for showing the linting in console at build time as well as dev time.
 import * as path from "path";
-
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
+ 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [eslintPlugin(), vue()],
+  plugins: [eslintPlugin(), vue(), nodePolyfills()],
   resolve: {
     alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
   },

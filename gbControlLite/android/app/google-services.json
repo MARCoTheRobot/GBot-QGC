@@ -1,0 +1,109 @@
+{
+  "project_info": {
+    "project_number": "713994289875",
+    "firebase_url": "https://newagent-e3a67.firebaseio.com",
+    "project_id": "newagent-e3a67",
+    "storage_bucket": "newagent-e3a67.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713994289875:android:75554754794c5c03360a26",
+        "android_client_info": {
+          "package_name": "org.guardbot.app1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713994289875-e002t1osge66avnoigh6pf070jq750ps.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.guardbot.app1",
+            "certificate_hash": "8ac28fe13a1bf8bffed910f5d5937b5a6a71321b"
+          }
+        },
+        {
+          "client_id": "713994289875-muro2he5s974k1rc7ga4k63pihql3oi4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.guardbot.app1",
+            "certificate_hash": "94ea1b718e029fd0eb5c1b070f9717fc935929b5"
+          }
+        },
+        {
+          "client_id": "713994289875-tnhrjqcus2aamaf912sobelverru0lop.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWnNV7H9pArfa-khg7N8fs9by0pCfUAGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713994289875-fmjnqmvr0cvo9pv2bnmkosoc2o8rhobp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "713994289875-6qluc6j0gippu71fg6gvo60qu0iu5168.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.guardbot.app12",
+                "app_store_id": "1556111209"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713994289875:android:cea4f68988462772360a26",
+        "android_client_info": {
+          "package_name": "com.marcohealthtech.mindovational"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713994289875-hplelt7cj5j18fu793au0vr1rmg25k4k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.marcohealthtech.mindovational",
+            "certificate_hash": "1c88b0388625efaf809f423815bc85e65feaa1e3"
+          }
+        },
+        {
+          "client_id": "713994289875-tnhrjqcus2aamaf912sobelverru0lop.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWnNV7H9pArfa-khg7N8fs9by0pCfUAGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713994289875-fmjnqmvr0cvo9pv2bnmkosoc2o8rhobp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "713994289875-6qluc6j0gippu71fg6gvo60qu0iu5168.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.guardbot.app12",
+                "app_store_id": "1556111209"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

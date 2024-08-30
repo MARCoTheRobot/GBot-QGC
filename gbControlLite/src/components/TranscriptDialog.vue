@@ -17,20 +17,24 @@
                 <p class="text-sm italic font-light">Send a first message to the robot!</p>
             </div>
             <div v-else>
-            <div :class="`flex flex-row justify-${transcript.type === 'user' ? 'end':'start'} w-full`" v-for="transcript in settings.transcript.messages" :key="transcript.id">
-                <div class="flex flex-col gap-1">
-                    
-                <p class="text-sm italic font-light rounded" v-if="transcript.type === 'status'">Status update</p> 
-                <p class="text-sm italic font-light rounded" v-else-if="transcript.type === 'liveTranscription'">Transcribing</p>
-                <p :class="messageClass(transcript)">{{ transcript.text }}</p>
+                <div :class="`flex flex-row justify-${transcript.type === 'user' ? 'end' : 'start'} w-full`"
+                    v-for="transcript in settings.transcript.messages" :key="transcript.id">
+                    <div class="flex flex-col gap-1">
+
+                        <p class="text-sm italic font-light rounded" v-if="transcript.type === 'status'">Status update
+                        </p>
+                        <p class="text-sm italic font-light rounded"
+                            v-else-if="transcript.type === 'liveTranscription'">
+                            Transcribing</p>
+                        <p :class="messageClass(transcript)">{{ transcript.text }}</p>
+                    </div>
                 </div>
             </div>
         </div>
-        </div>
         <template #footer>
             <InputGroup>
-                <InputText placeholder="Keyword" />
-                <Button icon="pi pi-send" severity="secondary" />
+                <InputText v-model="nextMessage" placeholder="Send a message" />
+                <Button icon="pi pi-send" severity="secondary" @click="send" />
                 <Button icon="pi pi-microphone" severity="secondary" />
             </InputGroup>
         </template>
@@ -49,13 +53,20 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Image from "primevue/image";
 import Transcript3D from "@/assets/icons/transcription-3d.png";
+import { useMutation } from "@tanstack/vue-query";
+
+const conversationalAPI = import.meta.env.CONV_API;
 
 import { ref, computed } from "vue";
 import useSettingsStore from "@/store/settings";
 const settings = useSettingsStore();
 import { storeToRefs } from "pinia";
+import http from "@/lib/http";
+import { toUrl } from "@/lib/utils";
 
 const { transcript } = storeToRefs(settings);
+
+const nextMessage = ref("");
 
 const transcripts = ref([
     { id: 1, speaker: "Marco", text: "Hello, I am Marco." },
@@ -78,6 +89,42 @@ const messageClass = (message: any) => {
     };
 };
 
+
+
 console.log("transcript", transcript);
+
+const { mutate } = useMutation({
+    mutationFn: async (text: string) => {
+        return  http({url:"https://us-central1-guardbot-qgc.cloudfunctions.net/commandConversation", method: "POST", data:{ text:text, sessionID: "1234" }});
+    },
+
+    onMutate: (text: string) => {
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "user", text: nextMessage.value });
+        nextMessage.value = "";
+    },
+    onSuccess: (data) => {
+        console.log("data a a a", data);
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: data.statusResponse });
+        
+    },
+    onError: (error) => {
+        console.error("error", error);
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: error.message });
+    }
+
+}
+);
+
+
+const send = async () => {
+    mutate(nextMessage.value);
+    
+    
+    };
+
+
+
+
+
 
 </script>

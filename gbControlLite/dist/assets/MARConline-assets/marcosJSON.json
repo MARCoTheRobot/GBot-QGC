@@ -1,0 +1,72 @@
+//MARCos
+{"marcos":[{"backendName":"DogMARCo","displayName":"Dog MARCo","iconURL":"/assets/MARConline-assets/DogMARCo/icon.png","marcoinDiscount":0,"marcoinsOrig":2500,"productColor":"#f4f1b1","productTagline":"Say hi to your pawesome new friend!","productDescription":"This MARCo pup will \"fetch\" all your good feelings for you and have you rolling-over in laughter!"},{"backendName":"FrogMARCo","displayName":"Frog MARCo","iconURL":"/assets/MARConline-assets/FrogMARCo/icon.png","marcoinDiscount":0,"marcoinsOrig":2000,"productColor":"#15b548","productTagline":"Say hi to your froggin' awesome new friend!","productDescription":"Frog MARCo will hop into your heart and make quite a splash, with jokes that will have you croaking with laughter!"},{"backendName":"PrideMARCo","displayName":"Pride MARCo","iconURL":"/assets/MARConline-assets/PrideMARCo/icon.png","marcoinDiscount":0,"marcoinsOrig":0,"productColor":"#c62490","productTagline":"Celebrate Pride Month every month with your own pride MARCo!","productDescription":"Free forever because you should never have to pay for who you are."}]}
+
+//Backgrounds:
+{"backgrounds":[
+	{"backendName":"marconline-background-1",
+	"displayName":"Classic View",
+	 "iconURL":"/assets/MARConline-assets/backgrounds/marconline-background-1.png",
+	 "marcoinDiscount":250,
+	 "marcoinsOrig":500,
+	 "productColor":"#0088ff",
+	 "productTagline":"#Throwback Thursday!",
+	 "productDescription":"Get them retro vibes going with this original MARConline background."
+	}]}
+
+//Head Acessories:
+{"headAccessories":[
+	{"backendName":"redBow",
+	"displayName":"Red Bow",
+	 "iconURL":"/assets/MARConline-assets/headAccessories/redBow.svg",
+	 "marcoinDiscount":0,
+	 "marcoinsOrig":150,
+	 "productColor":"#eb4034",
+	 "productTagline":"A cute red bow!",
+	 "productDescription":"Imagine how nice this will look on your MARCo's head!"
+	},
+	{"backendName":"blueBow",
+	"displayName":"Blue Bow",
+	 "iconURL":"/assets/MARConline-assets/headAccessories/blueBow.svg",
+	 "marcoinDiscount":0,
+	 "marcoinsOrig":150,
+	 "productColor":"#0088ff",
+	 "productTagline":"A cute blue bow!",
+	 "productDescription":"Imagine how nice this will look on your MARCo's head!"
+	},
+	{"backendName":"greeBow",
+	"displayName":"Green Bow",
+	 "iconURL":"/assets/MARConline-assets/headAccessories/greenBow.svg",
+	 "marcoinDiscount":0,
+	 "marcoinsOrig":150,
+	 "productColor":"#37ffbe",
+	 "productTagline":"A cute green bow!",
+	 "productDescription":"Imagine how nice this will look on your MARCo's head!"
+	},
+	{"backendName":"pinkBow",
+	"displayName":"Pink Bow",
+	 "iconURL":"/assets/MARConline-assets/headAccessories/pinkBow.svg",
+	 "marcoinDiscount":0,
+	 "marcoinsOrig":150,
+	 "productColor":"#ff91ca",
+	 "productTagline":"A cute pink bow!",
+	 "productDescription":"Imagine how nice this will look on your MARCo's head!"
+	},
+	{"backendName":"topHat",
+	"displayName":"Top Hat",
+	 "iconURL":"/assets/MARConline-assets/headAccessories/topHat.svg",
+	 "marcoinDiscount":200,
+	 "marcoinsOrig":750,
+	 "productColor":"#000000",
+	 "productTagline":"Your MARCo has never looked this dapper!",
+	 "productDescription":"Get MARCo's fancy on by donning this grandiose piece of elegant headwear."
+	},
+	{"backendName":"bowlerHat",
+	"displayName":"Bowler Hat",
+	 "iconURL":"/assets/MARConline-assets/headAccessories/bowlerHat.svg",
+	 "marcoinDiscount":50,
+	 "marcoinsOrig":400,
+	 "productColor":"#004455",
+	 "productTagline":"Get your classy on!",
+	 "productDescription":"Because nothing shouts classy like a robot wearing an outdated hat."
+	}
+]}

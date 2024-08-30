@@ -1,7 +1,7 @@
 {
-  "appId": "com.marcohealthtech.app",
-  "appName": "MARCo Online",
-  "bundledWebRuntime": true,
+  "appId": "org.guardbot.app1",
+  "appName": "GuardBot Ground Control",
+  "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "dist",
   "plugins": {

@@ -1,0 +1,139 @@
+{
+  "identifier" : "3AF4416C",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : true,
+    "_billingIssuesEnabled" : true,
+    "_timeRate" : 6
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "A5687AE3",
+      "localizations" : [
+
+      ],
+      "name" : "MARCo Online Subscriptions",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "11.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B718C1B9",
+          "introductoryOffer" : {
+            "displayPrice" : "1.2",
+            "internalID" : "CCD66211",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "payAsYouGo",
+            "subscriptionPeriod" : "P1M"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "46d70267a0ae425db52b6194c86ed1fd",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Subscription",
+          "subscriptionGroupID" : "A5687AE3",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "99.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "786AF151",
+          "introductoryOffer" : {
+            "displayPrice" : "6.99",
+            "internalID" : "6F296750",
+            "paymentMode" : "payUpFront",
+            "subscriptionPeriod" : "P1Y"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "6ff65d13d05143aca9446b1d6439b0e0",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Annual Subscription",
+          "subscriptionGroupID" : "A5687AE3",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "14.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "CB1B111A",
+          "introductoryOffer" : {
+            "displayPrice" : "1.2",
+            "internalID" : "DE61CB6A",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "payAsYouGo",
+            "subscriptionPeriod" : "P1Y"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "9eaf6e840a974f509366f73c523fb2fa",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "MARCo Early Monthly",
+          "subscriptionGroupID" : "A5687AE3",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "displayPrice" : "71.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "797B553F",
+          "introductoryOffer" : {
+            "displayPrice" : "6.99",
+            "internalID" : "A6EA5C60",
+            "paymentMode" : "payUpFront",
+            "subscriptionPeriod" : "P1Y"
+          },
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "7a396ea40fd549ffa6af4018df74c50b",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "MARCo Early Annual",
+          "subscriptionGroupID" : "A5687AE3",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 1,
+    "minor" : 1
+  }
+}
