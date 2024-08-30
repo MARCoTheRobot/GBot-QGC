@@ -35,7 +35,7 @@
             <InputGroup>
                 <InputText v-model="nextMessage" placeholder="Send a message" />
                 <Button icon="pi pi-send" severity="secondary" @click="send" />
-                <Button icon="pi pi-microphone" severity="secondary" />
+                <Button icon="pi pi-microphone" severity="secondary" @click="speechToText"/>
             </InputGroup>
         </template>
 
@@ -62,7 +62,10 @@ import useSettingsStore from "@/store/settings";
 const settings = useSettingsStore();
 import { storeToRefs } from "pinia";
 import http from "@/lib/http";
-import { toUrl } from "@/lib/utils";
+import { SpeechRecognition } from "@capacitor-community/speech-recognition";
+import useRobotStore from "@/store/robot";
+
+const robot = useRobotStore();
 
 const { transcript } = storeToRefs(settings);
 
@@ -105,7 +108,7 @@ const { mutate } = useMutation({
     onSuccess: (data) => {
         console.log("data a a a", data);
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: data.statusResponse });
-        
+        robot.useHandlePayload(data);
     },
     onError: (error) => {
         console.error("error", error);
@@ -122,8 +125,49 @@ const send = async () => {
     
     };
 
+    const listeningNow = ref(false);
+    const speechResult = ref<string[]>([]);
 
+const speechToText  = async () => {
+    const available = await SpeechRecognition.available();
+    console.log("available", available);
+    if(available){
+        console.log("listeningNow", listeningNow.value);
+        const hasPermission = await SpeechRecognition.requestPermissions();
+        console.log("hasPermission", hasPermission);
+        if(!hasPermission){
+            await SpeechRecognition.requestPermissions();
+        }
+        if(!listeningNow.value){
+            listeningNow.value = true;
+            
+            speechResult.value = await SpeechRecognition.start({
+            language: "en-US",
+            maxResults: 1,
+            prompt: "Speak now",
+            partialResults: true,
+            popup: true
+        }).then((result) => {
+            console.log("result", result);
+            speechResult.value = result.matches ? result.matches : [];
+            nextMessage.value = speechResult.value.join(" ");
+            listeningNow.value = false;
+            return send();
+        });
+    }
+    else{
+        listeningNow.value = false;
+        await SpeechRecognition.stop();
+        nextMessage.value = speechResult.value.join(" ");
+        send();
+    }
+    }
+}
 
+SpeechRecognition.addListener("onResult", (result) => {
+    console.log("result", result);
+    speechResult.value = result.value;
+});
 
 
 

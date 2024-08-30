@@ -3,14 +3,36 @@
     class="fixed top-0 z-10 flex flex-row items-start justify-between w-full px-4 py-1 bg-gray-800/60 backdrop-blur-2xl"
   >
     <div class="flex items-center gap-2">
+      <!--Check if video is active and add delay-->
       <IconVideo class="w-8 h-8" />
-      <span class="w-4 h-4 bg-green-500 rounded-full"></span>
-      <IconScooterElectric class="w-8 h-8"/>
-      <span :class="`w-4 h-4 ${robot.motorsActive ? 'bg-green-500':'bg-red-500'} rounded-full`"></span>
+      <span :class="`w-4 h-4 ${dotColor(robot.videoActive)} rounded-full`"></span>
+
+      <!--Audio on-->
       <IconVolume class="w-8 h-8"/>
       <span :class="`w-4 h-4 bg-red-500 rounded-full`"></span>
+
+      <!--Transcript active-->
       <IconTextCaption class="w-8 h-8"/>
       <span class="w-4 h-4 bg-red-500 rounded-full"></span>
+
+      <!--Motors active-->
+      <IconScooterElectric class="w-8 h-8"/>
+      <span :class="`px-2 ${robot.motorsActive ? 'bg-green-500':'bg-red-500'} rounded-full`">{{ robot.m1Speed.toFixed(1) }}</span>
+      <span :class="`px-2 ${robot.motorsActive ? 'bg-green-500':'bg-red-500'} rounded-full`">{{ robot.m2Speed.toFixed(1) }}</span>
+      
+
+      <!--Robot Pitch-->
+      <IconAngle class="w-8 h-8"/>
+      <span class="w-4 h-4 rounded-full">{{ robot.pitch.toFixed(1) }}°</span>
+
+      <!--External temperature-->
+      <IconThermometer class="w-8 h-8"/>
+      <span :class="`px-2 ${tempColor(robot.internalTemperature)} rounded-full`">{{ robot.internalTemperature.toFixed(0) }}°</span>
+
+      <!--CPU Temperature-->
+      <IconCpu class="w-8 h-8"/>
+      <span :class="`px-2 ${tempColor(robot.cpuTemperature)} rounded-full`">{{ robot.cpuTemperature.toFixed(0) }}°</span>
+
 
 
     </div>
@@ -28,19 +50,9 @@ import {
   IconVideo,
   IconVolume,
   IconTextCaption,
-  IconCalendarWeek,
-  IconChevronRight,
-  IconListDetails,
-  IconLogout,
-  IconMenu2,
-  IconMoon,
-  IconNotebook,
-  IconPhone,
-  IconPlayerPlay,
-  IconRefresh,
-  IconSettings,
-  IconSun,
-  IconX,
+  IconAngle,
+  IconThermometer,
+  IconCpu
 } from "@tabler/icons-vue";
 import Button from "primevue/button";
 import Sidebar from "primevue/sidebar";
@@ -59,6 +71,17 @@ const props = defineProps<{
 const saveAndQuit = () => {
   window.location.reload();
 };
+
+const dotColor = (active: boolean) => {
+  return active ? "bg-green-500" : "bg-red-500";
+};
+
+const tempColor = (temperature: number) => {
+  if(temperature < 32) return "bg-blue-500";
+  else if(temperature < 50) return "bg-green-500";
+  else if(temperature < 70) return "bg-yellow-500";
+  return "bg-red-500";
+}
 </script>
 
 <style scoped></style>
