@@ -3,6 +3,7 @@ import { RouteRecordRaw, createRouter, createWebHistory } from "vue-router";
 // @ts-ignore
 import routeInterceptor from "./krata/router/routeInterceptor";
 
+import StartVue from "@/pages/StartView.vue";
 import HomeView from "@/pages/HomeView.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
 import TestView from "@/pages/TestView.vue";
@@ -107,25 +108,27 @@ import TestView from "@/pages/TestView.vue";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
+    name: "start",
+    component: StartVue,
+  },
+  {
+    path: "/",
     component: RootLayout,
     children: [
+      
       {
-        path: "",
-        children: [
-          {
-            path: "",
-            name: "home",
+        path: "/home",
+        name: "home",
             component: HomeView,
-          },
-        ],
       },
+      {
+        path: "/map",
+        name: "map",
+        component: () => import("@/pages/MapView.vue"),
+      }
     ],
   },
   {
-    path: "/map",
-    name: "map",
-    component: () => import("@/pages/MapView.vue"),
-  },{
 		path: "/test", name: "test", component: TestView,
 	}
 ];

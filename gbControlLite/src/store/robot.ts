@@ -41,7 +41,7 @@ const useRobotStore = defineStore("robot", () => {
     if(typeof(state.value) === 'number' && state.value > -1){
       camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
     }
-  }, 100);
+  }, 500);
 
   /**
    * ---------------------
@@ -69,7 +69,11 @@ const useRobotStore = defineStore("robot", () => {
     }
   };
 
-  // Camera COMM Communication
+  /**
+   * ---------------------
+   * CAMERA COMMUNICATION MANAGEMENT
+   * ---------------------
+   */
 
   // Define cam_comm states
   const internalTemperature = ref<number>(0);
@@ -82,6 +86,11 @@ const useRobotStore = defineStore("robot", () => {
   const MAX_VIDEO_TIMEOUT = 2;
   const videoBuffer = ref<any>("");
 
+  /**
+   * @function camCommData
+   * @param data 
+   * @description - This function is called when data is received from the robot's Camera Communication
+   */
   const camCommData = (data: any) => {
     // console.log("Received data:", data.toString());
     const dataPrefix2 = data.slice(0, 1);
@@ -107,12 +116,12 @@ const useRobotStore = defineStore("robot", () => {
           // this.motors.lastSpeedValueMotors = i;
           // this.motors.motorSpeedData(i);
         } else if (k === "state") {
-          if (i !== this.state) {
+          if (i !== state.value) {
             // gui.setState(i);
             // this.state = i;
           }
         } else if (k === "transcript") {
-          transcript.value = i;
+          transcript.value = i + " ";
         }
       }
     }
@@ -137,16 +146,52 @@ const useRobotStore = defineStore("robot", () => {
 
   const connectionPassword = ref("HARV7");
 
+  /**
+   * ---------------------
+   * EXTERNAL COMMUNICATION
+   * ---------------------
+   */
   // const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
   const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  // const audioComm = new EComm(["16.170.39.119",8044], "a" + connectionPassword.value, false);
+  const audioComm = new EComm(["192.168.1.208",8044], "a" + connectionPassword.value, false);
+  audioComm.initialize();
   camComm.receiveLoop((data) => {
-    console.log("Received:", data);
+    // console.log("Received:", data);
     camCommData(data);
   });
+
+
+  /**
+   * @function audioCommData
+   * @param data 
+   * @description - This function is called when data is received from the robot's Audio Communication
+   */
+  const audioCommData = (data: any) => {
+    // console.log("Received data:", data.toString());
+    const dataPrefix2 = data.slice(0, 1);
+    data = data.slice(1);
+
+    if (dataPrefix2.equals(dataPrefix["audio"])) {
+      // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
+      // console.log("Received video data");
+      console.log("Received audio data");
+    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
+      const parsedData = JSON.parse(data.toString());
+      for (const [k, i] of Object.entries(parsedData)) {
+        if (k === "transcript") {
+          transcript.value = i;
+        }
+      }
+    }
+  };
+
+  audioComm.receiveLoop((data) => {
+    // console.log("Received:", data);
+    audioCommData(data);
+  });
   // const camComm = ref("");
-  const audioComm = ref("");
+  // const audioComm = ref("");
 
   /**
    * ---------------------
@@ -166,9 +211,9 @@ const useRobotStore = defineStore("robot", () => {
     const data = JSON.stringify({"controls":newJoystick});
     // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
-    console.log("Returning the data to string AAAAA:", bufferData.toString());
+    // console.log("Returning the data to string AAAAA:", bufferData.toString());
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
-    console.log("Returning the concatdata to string AAAAA:", concatData.toString());
+    // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
     camComm.sendS(concatData);
   });
 
@@ -197,7 +242,7 @@ const useRobotStore = defineStore("robot", () => {
    * @description - This function is called when the motor speeds are updated
    */
   const motorSpeedData = (data: any) => {
-    console.log("Motor speeds updated:", data);
+    // console.log("Motor speeds updated:", data);
     motorSpeeds.value = data;
     lastMotorSpeedTime.value = Date.now();
   };
@@ -300,6 +345,7 @@ const useRobotStore = defineStore("robot", () => {
           } else {
             clearInterval(motorOverrideInterval);
             toast.add({ severity: "success", summary: "Finished driving", detail: `Finished driving ${distanceNumber} ${unit}`, life: 1500 });
+            useMotorOverride([0, 0]);
           }
         }, 500);
       }
@@ -313,11 +359,39 @@ const useRobotStore = defineStore("robot", () => {
         // If transcribe is true, the robot will start or stop the transcription
         // This is used to start or stop the transcription
       }
+      if(payload.payload.speak){
+        // If speak is true, the robot will speak the text
+        // This is used to make the robot speak
+        useAudioCommand(payload.params.echo);
+      }
     }
     else{
       return false
     }
   }
+
+  /**
+   * ---------------------
+   * AUDIO MANAGEMENT
+   * ---------------------
+   */
+
+  /**
+   * @function useAudioCommand
+   * @param command - The command to send to the robot
+   * @description - This function is used to send audio commands to the robot to speak
+   */
+  const useAudioCommand = (command: string) => {
+    console.log("Sending audio command:", command);
+    audioComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({"command":command}), "utf-8")]));
+  }
+
+
+  /**
+   * ---------------------
+   * UTILITY FUNCTIONS
+   * ---------------------
+   */
 
   const unitToInches = (unit: string, value: number) => {
     if (unit === "in") {

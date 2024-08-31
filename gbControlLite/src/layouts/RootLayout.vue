@@ -41,12 +41,20 @@ import ConfirmDialog from "primevue/confirmdialog";
 import Menu from "primevue/menu";
 import AppHeader from "@/layouts/partials/AppHeader.vue";
 import TranscriptDialog from "@/components/TranscriptDialog.vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 const toast = useToast();
 toast.add({ severity: "success", summary: "Success Message", detail: `${settings.user}` });
 const menuItems = ref([
-	{ label: "Robot Mode", icon: "pi pi-fw pi-home", to: "/" },
-	{ label: "Mission Planner", icon: "pi pi-fw pi-map", to: "/users" },
-	{ label: "Settings", icon: "pi pi-fw pi-cog", to: "/settings" },
+	{ label: "Robot Mode", icon: "pi pi-fw pi-home", command: () => {
+		router.push("/home");
+	} },
+	{ label: "Mission Planner", icon: "pi pi-fw pi-map", command: () => {
+		router.push("/map");
+	} },
+	{ label: "Settings", icon: "pi pi-fw pi-cog", command: () => {
+		router.push("/settings");
+	} },
 ]);
 </script>
 

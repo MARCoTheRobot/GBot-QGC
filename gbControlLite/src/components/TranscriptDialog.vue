@@ -57,7 +57,7 @@ import { useMutation } from "@tanstack/vue-query";
 
 const conversationalAPI = import.meta.env.CONV_API;
 
-import { ref, computed } from "vue";
+import { ref, watch } from "vue";
 import useSettingsStore from "@/store/settings";
 const settings = useSettingsStore();
 import { storeToRefs } from "pinia";
@@ -67,19 +67,15 @@ import useRobotStore from "@/store/robot";
 
 const robot = useRobotStore();
 
-const { transcript } = storeToRefs(settings);
+const { transcript } = storeToRefs(robot);
 
 const nextMessage = ref("");
 
-const transcripts = ref([
-    { id: 1, speaker: "Marco", text: "Hello, I am Marco." },
-    { id: 2, speaker: "Alice", text: "Hello, I am Alice." },
-    { id: 3, speaker: "Bob", text: "Hello, I am Bob." }
-]);
 
 const messageClass = (message: any) => {
     return {
         "p-4": true,
+        "w-full": true,
         "rounded-lg": true,
         "align-self-end": message.type === "user",
         "align-self-start": message.type === "status",
@@ -93,8 +89,29 @@ const messageClass = (message: any) => {
 };
 
 
+/**
+ * Watch the transcript object for changes -
+ * If the transcript changes and the most recent message is of type liveTranscription,
+ * then add the message to the last message in the transcript
+ * Otherwise, create a new message in the transcript with the liveTranscription message
+ */
+watch(transcript, (value) =>{
+    console.log("transcript", value);
+    if(settings.transcript.messages.length > 0 ){
+    const lastMessage = settings.transcript.messages[settings.transcript.messages.length - 1];
+    if(lastMessage.type === "liveTranscription"){
+        settings.transcript.messages[settings.transcript.messages.length - 1].text += value;
+    }
+    else{
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "liveTranscription", text: value });
+    }
+}
+else{
+    settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "liveTranscription", text: value });
+}   
+});
 
-console.log("transcript", transcript);
+
 
 const { mutate } = useMutation({
     mutationFn: async (text: string) => {

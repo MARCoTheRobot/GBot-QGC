@@ -24,6 +24,9 @@ const dataPrefix2 = {
   audio: Buffer.from("\x03"),
 };
 
+let lastMotorSpeeds = [0, 0];
+let lastPitch = 0;
+
 
 
 // emits when any error occurs
@@ -49,13 +52,26 @@ console.log("The info is : ",info);
     optionalJsonData = JSON.parse(dataString.substring(jsonStart));
   }
 //sending msg
+if(optionalJsonData && optionalJsonData.controls){
+  lastMotorSpeeds = [20 * ( optionalJsonData.controls[0] + optionalJsonData.controls[1] ), 20 * ( optionalJsonData.controls[0] + optionalJsonData.controls[1] )];
+}
+if(optionalJsonData && optionalJsonData.controls){
+  lastPitch = (optionalJsonData.controls[0] + optionalJsonData.controls[1]) * 90;
+}
 const returnMessage = Buffer.concat([Buffer.from('<HARV7>'),dataPrefix1.data,dataPrefix2.json_data]);
+let nextDummyText = DUMMY_TEXT_ARRAY[dummyTextIndex];
+if(dummyTextIndex < DUMMY_TEXT_ARRAY.length - 1){
+  dummyTextIndex++;
+}
+else{
+  dummyTextIndex = 0;
+}
 const jsonData = {
     "internal_temperature": 20 + Math.random() * 90,
     "cpu_temperature": 20 + Math.random() * 90,
-    "pitch":  optionalJsonData && optionalJsonData.controls ? 90 * ( optionalJsonData.controls[0] + optionalJsonData.controls[1] ) : 0,
-    "motor_speeds": [optionalJsonData && optionalJsonData.controls ? 20 * ( optionalJsonData.controls[0] + optionalJsonData.controls[1] ) : 0, optionalJsonData && optionalJsonData.controls ? 20 * ( optionalJsonData.controls[0] + optionalJsonData.controls[1] ): 0],
-    "transcript": "Hello, I am the transcript",
+    "pitch":  lastPitch,
+    "motor_speeds": lastMotorSpeeds,
+    "transcript": nextDummyText,
 }
 const returnMessageBuffer = Buffer.concat([returnMessage,Buffer.from(JSON.stringify(jsonData))]) ;
 console.log('Sending msg to client',returnMessageBuffer.toString('utf-8'), info.address, 8043);
@@ -91,7 +107,7 @@ if (!appendVideo) {
       appendVideo = false;
       videoFrame = 0;
     }
-  }, 20);
+  }, 500);
 }
 
 });
@@ -117,3 +133,9 @@ server.on('close',function(){
 });
 
 server.bind(8043);
+
+
+const DUMMY_TEXT = "Lorum ipsum dolor sit amet, consectetur adipiscing elit. The quick brown fox jumps over the lazy dog. Frankly my dear, I don't give a damn. I'm sorry Dave, I'm afraid I can't do that. Where were you on the night of the 23rd? Four score and seven years ago, our fathers brought forth on this continent a new nation, conceived in liberty, and dedicated to the proposition that it's freaking awesome. How many licks does it take to get to the center of a tootsie pop?";
+
+const DUMMY_TEXT_ARRAY = DUMMY_TEXT.split(' ');
+let dummyTextIndex = 0;
