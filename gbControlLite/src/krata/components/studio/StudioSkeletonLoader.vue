@@ -2,36 +2,36 @@
   <div class="loading-studio-layout studio-layout">
     <div class="nav-bar">
       <div class="branding">
-        <div class="brand-logo"></div>
-        <div class="title"></div>
+        <div class="brand-logo" />
+        <div class="title" />
       </div>
       <div class="tool-bar">
         <div class="draw-tools">
-          <div class="tool" v-for="i in 7" :key="`tool_${i}`"></div>
+          <div v-for="i in 7" :key="`tool_${i}`" class="tool" />
         </div>
       </div>
     </div>
     <div class="content-layout">
       <div class="explorer-panel">
         <div class="tab">
-          <div class="tab-icon"></div>
-          <div class="tab-text"></div>
+          <div class="tab-icon" />
+          <div class="tab-text" />
         </div>
         <div class="features">
           <div v-for="i in 10" :key="`feature_${i}`" class="feature">
-            <div class="icon skeleton"></div>
-            <div class="text skeleton"></div>
+            <div class="icon skeleton" />
+            <div class="text skeleton" />
           </div>
         </div>
       </div>
       <div class="editor-view">
-        <EditorLoader/>
+        <EditorLoader />
       </div>
       <div class="details-panel">
         <div class="features">
           <div v-for="i in 10" :key="`feature_${i}`" class="feature">
-            <div class="icon skeleton"></div>
-            <div class="text skeleton"></div>
+            <div class="icon skeleton" />
+            <div class="text skeleton" />
           </div>
         </div>
       </div>

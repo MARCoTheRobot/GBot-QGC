@@ -7,23 +7,23 @@
         type="text"
         placeholder="Name"
         :class="['prop-name', { disabled }]"
-        @blur="updateProperty"
         tabindex="0"
         :readonly="disabled"
         required
-      />
+        @blur="updateProperty"
+      >
       <input
         ref="propValueRef"
         v-model="propValue"
         type="text"
         placeholder="Empty"
         :class="['prop-value', { disabled }]"
-        @blur="updateProperty"
         :readonly="disabled"
         tabindex="0"
         required
-      />
-      <input v-show="false" type="submit" name="" id="" />
+        @blur="updateProperty"
+      >
+      <input v-show="false" id="" type="submit" name="">
       <button
         type="button"
         class="more-button"
@@ -35,17 +35,17 @@
     </form>
     <div
       v-if="showEditableOptions"
-      class="editable-options"
       v-click-away="
         () => {
           showEditableOptions = false;
         }
       "
+      class="editable-options"
     >
       <div
-        class="item"
         v-for="option in options"
         :key="option.id"
+        class="item"
         @click="selectAction(option.id)"
       >
         <span>{{ option.name }}</span>
@@ -59,6 +59,9 @@ import MoreIcon from "@/krata/components/icons/MoreIcon.vue";
 import { ref, computed, watch } from "vue";
 
 export default {
+  components: {
+    MoreIcon,
+  },
   props: {
     name: {
       type: String,
@@ -72,9 +75,6 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  components: {
-    MoreIcon,
   },
   setup(props, { emit }) {
     const propName = ref(props.name);

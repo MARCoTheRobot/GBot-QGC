@@ -78,30 +78,30 @@
           <div class="icon-wrapper">
             <FileUploadIcon :size="40" class="icon" />
           </div>
-          <div v-if="isReadingFile" class="progress-bar"></div>
+          <div v-if="isReadingFile" class="progress-bar" />
           <div v-else class="texts">
             <h4>Click here or drag and drop your file here to import.</h4>
             <p>Supports .geojson, .json, and .csv file formats</p>
           </div>
           <input
-            type="file"
-            ref="fileImportInputRef"
-            id="fileImportInput"
             v-show="false"
+            id="fileImportInput"
+            ref="fileImportInputRef"
+            type="file"
             accept="text/csv, application/json, application/geo+json"
             @change="loadSelectedFile"
-          />
+          >
         </div>
       </div>
       <div v-if="showFooter" class="footer">
         <v-button
           :text="'Import'"
           :disabled="isButtonDisabled"
-          :isLoading="isReadingFile"
-          @click="() => loadCSVFeatures()"
+          :is-loading="isReadingFile"
           small
+          @click="() => loadCSVFeatures()"
         >
-          <template v-slot:iconLeft>
+          <template #iconLeft>
             <add-icon style="margin-right: 5px" />
           </template>
         </v-button>
@@ -121,17 +121,17 @@ import { useStoreModule } from "@/krata/composables/useStoreModule";
 import { POSITION, useToast } from "vue-toastification";
 
 export default defineComponent({
-  props: {
-    file: {
-      type: Object,
-    },
-  },
   components: {
     ClearIcon,
     VButton,
     AddIcon,
     FileUploadIcon,
     VSelect,
+  },
+  props: {
+    file: {
+      type: Object,
+    },
   },
   setup(props, { emit }) {
     const tabs = [

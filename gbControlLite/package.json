@@ -6,7 +6,7 @@
   "scripts": {
     "start:dev": "vite --mode dev",
     "start:prod": "vite --mode prod",
-    "build": "vue-tsc && vite build && npx cap sync",
+    "build": "vue-tsc && vite build --mode prod && npx cap sync",
     "preview": "vite preview",
     "lint": "npx eslint src ",
     "lint:fix": "npm run lint -- --fix",

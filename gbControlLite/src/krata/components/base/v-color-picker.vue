@@ -6,8 +6,8 @@
       class="cp-custom"
       :format="'rgb'"
       :shape="'circle'"
-      :pickerType="'chrome'"
-      :useType="'pure'"
+      :picker-type="'chrome'"
+      :use-type="'pure'"
     />
     <input
       ref="colorInput"
@@ -16,8 +16,8 @@
       :value="hexColor"
       class="color-input"
       @blur="updateColors"
-    />
-    <div class="divider"></div>
+    >
+    <div class="divider" />
     <input
       ref="alphaInput"
       type="text"
@@ -25,7 +25,7 @@
       :value="aphaValue"
       class="alpha-input"
       @blur="updateColors"
-    />
+    >
     <div class="visibility" @click="toggleHideState">
       <component
         :is="hide ? 'VisibilityOffIcon' : 'VisibilityIcon'"

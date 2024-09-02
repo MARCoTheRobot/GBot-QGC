@@ -4,7 +4,7 @@
       :is="modelValue ? 'CheckBoxIcon' : 'CheckBoxOutlineIcon'"
       :size="size"
     />
-    <span class="checkbox-label" v-if="label">{{ label }}</span>
+    <span v-if="label" class="checkbox-label">{{ label }}</span>
   </div>
 </template>
 
@@ -13,6 +13,10 @@ import CheckBoxIcon from "@/krata/components/icons/CheckBoxIcon.vue";
 import CheckBoxOutlineIcon from "@/krata/components/icons/CheckBoxOutlineIcon.vue";
 
 export default {
+  components: {
+    CheckBoxIcon,
+    CheckBoxOutlineIcon,
+  },
   props: {
     modelValue: {
       type: Boolean,
@@ -31,10 +35,6 @@ export default {
       'update:modelValue': {
           type: Boolean
       }
-  },
-  components: {
-    CheckBoxIcon,
-    CheckBoxOutlineIcon,
   },
 };
 </script>

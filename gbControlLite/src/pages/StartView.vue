@@ -2,7 +2,7 @@
     <div class="flex w-screen h-screen welcome-screen">
         <div class="flex flex-col justify-center w-1/3 h-full gap-2 px-8 align-middle">
             <h2 class="text-4xl font-black text-left text-white">Welcome to GuardBot</h2>
-            <Button label="Get Started" rounded icon="pi pi-arrow-right" iconPos="right" severity="info" @click="$router.push('/home')"/>
+            <Button label="Get Started" rounded icon="pi pi-arrow-right" icon-pos="right" severity="info" @click="$router.push('/home')" />
 
         </div>
     </div>
@@ -24,8 +24,8 @@ import { toUrl } from '@/lib/utils';
 const messages = ref([]);
 const newMessage = ref('');
 const sock = ref(null);
-const serverAddress = ["192.168.1.208", 8043]
-// const serverAddress = ['harv7.harv-guardbot.org', 8043]
+// const serverAddress = ["192.168.1.208", 8043]
+const serverAddress = ['harv7.harv-guardbot.org', 8043]
 let sockID = 1
 
 const dataPrefix = {

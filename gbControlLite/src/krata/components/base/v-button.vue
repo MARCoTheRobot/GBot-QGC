@@ -10,17 +10,17 @@
     @click="$emit('click')"
   >
     <div :class="['button-contents', { hidden: isLoading }]">
-      <slot name="iconLeft"></slot>
+      <slot name="iconLeft" />
       <span
         >{{ text }}
-        <slot name="iconRight"></slot>
+        <slot name="iconRight" />
       </span>
     </div>
     <v-loading-dots
+      v-if="isLoading"
       class="floating-dots"
       :width="'40px'"
       :height="'20px'"
-      v-if="isLoading"
     />
   </button>
 </template>
@@ -29,6 +29,9 @@
 import VLoadingDots from "@/krata/components/base/v-loading-dots.vue";
 
 export default {
+  components: {
+    VLoadingDots,
+  },
   props: {
     type: {
       type: String,
@@ -68,9 +71,6 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  components: {
-    VLoadingDots,
   },
 };
 </script>

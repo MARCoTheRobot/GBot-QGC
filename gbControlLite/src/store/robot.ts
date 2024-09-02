@@ -151,10 +151,12 @@ const useRobotStore = defineStore("robot", () => {
    * EXTERNAL COMMUNICATION
    * ---------------------
    */
-  // const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
-  const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
+  const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
+  // const camComm = new EComm(["192.168.0.169", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  const audioComm = new EComm(["192.168.1.208",8044], "a" + connectionPassword.value, false);
+  // const audioComm = new EComm(["192.168.0.169",8044], "a" + connectionPassword.value, false);
+    const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
+
   audioComm.initialize();
   camComm.receiveLoop((data) => {
     // console.log("Received:", data);

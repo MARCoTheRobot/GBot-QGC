@@ -10,17 +10,17 @@
     @click="$emit('click')"
   >
     <div :class="['button-contents', { hidden: isLoading }]">
-      <GitHubIcon class="icon" :size="20"/>
+      <GitHubIcon class="icon" :size="20" />
       <span
         >{{ text }}
-        <slot name="iconRight"></slot>
+        <slot name="iconRight" />
       </span>
     </div>
     <v-loading-dots
+      v-if="isLoading"
       class="floating-dots"
       :width="'40px'"
       :height="'20px'"
-      v-if="isLoading"
     />
   </button>
 </template>
@@ -30,6 +30,10 @@ import VLoadingDots from "@/krata/components/base/v-loading-dots.vue";
 import GitHubIcon from "@/krata/components/icons/GitHubIcon.vue";
 
 export default {
+  components: {
+    VLoadingDots,
+    GitHubIcon
+  },
   props: {
     type: {
       type: String,
@@ -65,10 +69,6 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  components: {
-    VLoadingDots,
-    GitHubIcon
   },
 };
 </script>

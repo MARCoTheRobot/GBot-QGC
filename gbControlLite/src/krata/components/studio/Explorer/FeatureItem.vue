@@ -15,16 +15,16 @@
       @dblclick="setEditable"
     >
       <input
-        type="text"
-        name="featureName"
         ref="featureNameInput"
         v-model="featureName"
+        type="text"
+        name="featureName"
         :readonly="readonly"
         size="2"
         @blur="renameFeature"
         @focus="setEditable"
-      />
-      <input v-show="false" type="submit" />
+      >
+      <input v-show="false" type="submit">
     </form>
     <div
       v-if="isEditable"

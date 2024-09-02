@@ -1,7 +1,7 @@
 <template>
   <div class="loader-component">
     <logo size="40" />
-    <div class="progress-bar"></div>
+    <div class="progress-bar" />
   </div>
 </template>
 

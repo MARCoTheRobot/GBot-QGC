@@ -20,9 +20,10 @@
       "https://app.marcohealthtech.com/?isreact=true",
       "*",
       "localhost",
-      "capacitor://localhost"
+      "capacitor://localhost",
+      "https://commandconversation-kl3exemiua-uc.a.run.app/"
     ],
-    "url": "http://192.168.1.208:8080/",
+    "url": "http://192.168.0.169:8080/",
     "cleartext": true,
     "androidScheme": "https",
     "iosScheme": "https"
@@ -34,10 +35,13 @@
       "https://app.marcohealthtech.com/?isreact=true",
       "*",
       "localhost",
-      "capacitor://localhost"
+      "capacitor://localhost",
+      "https://api.mapbox.com",
+      "api.mapbox.com",
+      "https://commandconversation-kl3exemiua-uc.a.run.app/"
     ],
     "hostname": "localhost",
-    "iosScheme": "https",
-    "androidScheme": "https"
+    "iosScheme": "http",
+    "androidScheme": "http"
   }
 }

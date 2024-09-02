@@ -2,24 +2,24 @@
   <div class="feature-list-wrapper">
     <div v-if="features && features.length" class="feature-list">
       <RecycleScroller
+        v-slot="{ item }"
         :items="features"
         :item-size="40"
         page-mode
         key-field="id"
-        v-slot="{ item }"
       >
         <feature-item
           :key="item.id"
           :feature="item"
-          :isHoveredFeature="hoveredFeatureId === item?.properties?.id"
-          :isSelectedFeature="item.isSelected"
-          :isEditable="isShapesEditable"
+          :is-hovered-feature="hoveredFeatureId === item?.properties?.id"
+          :is-selected-feature="item.isSelected"
+          :is-editable="isShapesEditable"
           @contextmenu.prevent="($event) => showFeatureOptions($event, item)"
         />
       </RecycleScroller>
     </div>
     <div v-else class="not-found">
-      <img src="@/krata/assets/map.png" alt="empty" class="empty-icon" />
+      <img src="@/krata/assets/map.png" alt="empty" class="empty-icon">
       <p class="description">
         Click on the <strong>tools</strong> on top to start creating features or
         drag and drop a <strong>.geojson</strong>,  <strong>.json</strong>or <strong>.csv</strong> file
@@ -30,10 +30,10 @@
   <Teleport to="#app">
     <FeatureContextMenu
       v-if="isShapesEditable && featuresContextMenuData"
+      v-click-away="() => (featuresContextMenuData = null)"
       :x="featuresContextMenuData.x"
       :y="featuresContextMenuData.y"
       @close="featuresContextMenuData = null"
-      v-click-away="() => (featuresContextMenuData = null)"
     />
   </Teleport>
 </template>

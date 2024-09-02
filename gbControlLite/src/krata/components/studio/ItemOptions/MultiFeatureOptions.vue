@@ -10,7 +10,7 @@
             v-for="(property, key) in groupedProperties.fillColor"
             :key="`fill_color_${key}`"
             :color="property.value"
-            @onChangeColor="(color) => updateFillColor(property, color)"
+            @on-change-color="(color) => updateFillColor(property, color)"
           />
         </div>
       </v-section>
@@ -20,7 +20,7 @@
             v-for="(property, key) in groupedProperties.lineColor"
             :key="`line_color_${key}`"
             :color="property.value"
-            @onChangeColor="(color) => updateLineColor(property, color)"
+            @on-change-color="(color) => updateLineColor(property, color)"
           />
         </div>
       </v-section>

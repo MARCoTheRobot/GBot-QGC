@@ -11,7 +11,7 @@
       @input="$emit('update:modelValue', $event.target.value)"
       @click="$emit('click')"
       @blur="$emit('blur')"
-    />
+    >
     <span v-if="!matchesPattern" class="hint">{{ hint }}</span>
   </div>
 </template>

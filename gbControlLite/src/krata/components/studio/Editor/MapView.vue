@@ -1,25 +1,25 @@
 <template>
-	<div id="editor-map-view" class="deck-container" ref="deckContainerRef">
-		<canvas id="screenshot-canvas" class="deck-container" v-show="false"></canvas>
-		<v-deckgl :layers="layers" :viewState="viewState" :disableContextMenu="true" :cursor="cursor" :controller="{
+	<div id="editor-map-view" ref="deckContainerRef" class="deck-container">
+		<canvas v-show="false" id="screenshot-canvas" class="deck-container" />
+		<v-deckgl :layers="layers" :view-state="viewState" :disable-context-menu="true" :cursor="cursor" :controller="{
 			doubleClickZoom: false,
 		}" @click="(info, event) => $emit('onClick', info, event)" @drag="(info, event) => $emit('onDrag', info, event)"
-			@onDragStart="(info, event) => $emit('onDragStart', info, event)"
-			@onDragEnd="(info, event) => $emit('onDragEnd', info, event)"
+			@on-drag-start="(info, event) => $emit('onDragStart', info, event)"
+			@on-drag-end="(info, event) => $emit('onDragEnd', info, event)"
 			@view-state-change="(viewState) => updateViewState(viewState)">
 			<!-- Base map -->
-			<template v-slot:background>
-				<div id="base-map" ref="map"></div>
+			<template #background>
+				<div id="base-map" ref="map" />
 			</template>
 			<!-- Map Labels -->
-			<template v-slot:foreground>
-				<div id="foreground-map" ref="fgmap" v-show="showMapLabels"></div>
+			<template #foreground>
+				<div v-show="showMapLabels" id="foreground-map" ref="fgmap" />
 			</template>
 		</v-deckgl>
 		<div class="branding">krata.app</div>
 	</div>
-	<MapControls @onClickSearch="setShowMapSearch(true)" @onClickZoomIn="zoomIn" @onClickZoomOut="zoomOut"
-		@onClickFitScreen="fitScreen" />
+	<MapControls @on-click-search="setShowMapSearch(true)" @on-click-zoom-in="zoomIn" @on-click-zoom-out="zoomOut"
+		@on-click-fit-screen="fitScreen" />
 </template>
 
 <script>

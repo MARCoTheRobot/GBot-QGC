@@ -41,8 +41,8 @@ let videoFrame = 0;
 
 // emits on new datagram msg
 server.on('message',function(msg,info){
-console.log("The info is : ",info);
-  console.log('Data received from client : ' + msg.toString('utf-8'));
+// console.log("The info is : ",info);
+//   console.log('Data received from client : ' + msg.toString('utf-8'));
   console.log('Received %d bytes from %s:%d\n',msg.length, info.address, info.port);
 
   const dataString = msg.toString('utf-8');
@@ -74,7 +74,7 @@ const jsonData = {
     "transcript": nextDummyText,
 }
 const returnMessageBuffer = Buffer.concat([returnMessage,Buffer.from(JSON.stringify(jsonData))]) ;
-console.log('Sending msg to client',returnMessageBuffer.toString('utf-8'), info.address, 8043);
+// console.log('Sending msg to client',returnMessageBuffer.toString('utf-8'), info.address, 8043);
 server.send(returnMessageBuffer,8043,info.address,function(error){
   if(error){
     client.close();
@@ -91,7 +91,7 @@ if (!appendVideo) {
     videoFrame++;
     const nextVideoFrame = String(videoFrame).padStart(3, '0');
     const videoData = fs.readFileSync(`assets/ezgif-frame-${nextVideoFrame}.jpg`,{encoding: 'base64'});
-    console.log('Video frame ', nextVideoFrame, ' is ', Buffer.from(videoData).length, ' bytes long');
+    // console.log('Video frame ', nextVideoFrame, ' is ', Buffer.from(videoData).length, ' bytes long');
     const videoMessage = Buffer.concat([Buffer.from('<HARV7>'),dataPrefix1.data,dataPrefix2.video,Buffer.from(videoData)]);
     // console.log('Sending video frame to client', videoMessage.toString('utf-8'), info.address, 8043);
     server.send(videoMessage,8043,info.address,function(error){
@@ -107,7 +107,7 @@ if (!appendVideo) {
       appendVideo = false;
       videoFrame = 0;
     }
-  }, 500);
+  }, 100);
 }
 
 });

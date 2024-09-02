@@ -13,7 +13,7 @@
       </div>
     </v-section>
     <v-section title="Custom Properties" bold>
-      <template v-if="isShapesEditable" v-slot:header>
+      <template v-if="isShapesEditable" #header>
         <button class="add-btn" @click="addNewProperty">
           <AddIcon size="20" />
         </button>
@@ -23,10 +23,10 @@
         :key="itemKey"
         :name="itemKey"
         :value="customProperties[itemKey]"
+        :disabled="!isShapesEditable"
         @update="
           ({ name, value }) => updateProperty({ itemId: itemKey, name, value })
         "
-        :disabled="!isShapesEditable"
         @delete="deleteProperty"
       />
     </v-section>

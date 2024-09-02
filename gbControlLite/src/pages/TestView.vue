@@ -15,11 +15,11 @@
         </div>
         <div class="input-container">
             <InputText v-model="newMessage" placeholder="Type your message" />
-            <Button @click="sendMessage" label="Send" @keyup.enter="sendMessage" />
+            <Button label="Send" @click="sendMessage" @keyup.enter="sendMessage" />
         </div>
         <div class="input-container">
             <InputText v-model="nextMessage" placeholder="Type your chat" />
-            <Button @click="sendChat" label="Send" @keyup.enter="sendChat" />
+            <Button label="Send" @click="sendChat" @keyup.enter="sendChat" />
         </div>
     </div>
 </template>

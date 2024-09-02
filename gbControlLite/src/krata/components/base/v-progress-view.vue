@@ -4,7 +4,7 @@
     :style="{
       top: top ? `${top}px` : 0,
     }"
-  ></div>
+  />
 </template>
 
 <script>

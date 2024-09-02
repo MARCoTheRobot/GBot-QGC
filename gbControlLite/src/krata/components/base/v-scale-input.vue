@@ -6,8 +6,8 @@
     <v-dropdown
       :value="scale"
       :options="scaleOptions"
-      @select="updateScale"
       width="100px"
+      @select="updateScale"
     />
     <input
       ref="widthInput"
@@ -15,9 +15,9 @@
       name="widthInput"
       :value="value"
       class="width-input"
-      @blur="updateLineWidth"
       placeholder="0"
-    />
+      @blur="updateLineWidth"
+    >
     <div class="slider">
       <slider
         v-model="width"

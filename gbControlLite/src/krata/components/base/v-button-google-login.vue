@@ -10,17 +10,17 @@
     @click="$emit('click')"
   >
     <div :class="['button-contents', { hidden: isLoading }]">
-      <GoogleIcon class="icon" :size="20"/>
+      <GoogleIcon class="icon" :size="20" />
       <span
         >{{ text }}
-        <slot name="iconRight"></slot>
+        <slot name="iconRight" />
       </span>
     </div>
     <v-loading-dots
+      v-if="isLoading"
       class="floating-dots"
       :width="'40px'"
       :height="'20px'"
-      v-if="isLoading"
     />
   </button>
 </template>
@@ -30,6 +30,10 @@ import VLoadingDots from "@/krata/components/base/v-loading-dots.vue";
 import GoogleIcon from "@/krata/components/icons/GoogleIcon.vue";
 
 export default {
+  components: {
+    VLoadingDots,
+    GoogleIcon
+  },
   props: {
     type: {
       type: String,
@@ -65,10 +69,6 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  components: {
-    VLoadingDots,
-    GoogleIcon
   },
 };
 </script>

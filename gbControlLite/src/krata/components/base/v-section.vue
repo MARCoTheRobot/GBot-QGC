@@ -1,9 +1,9 @@
 <template>
   <section class="options-section">
     <div class="header">
-      <h2 :class="['section-title', { bold }]" v-if="title">{{ title }}</h2>
+      <h2 v-if="title" :class="['section-title', { bold }]">{{ title }}</h2>
       <div class="header-options">
-        <slot name="header"></slot>
+        <slot name="header" />
       </div>
     </div>
     <div class="section-contents">

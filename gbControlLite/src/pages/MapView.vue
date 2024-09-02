@@ -2,8 +2,8 @@
   <StudioSkeletonLoader v-if="isLoading" />
   <div
     v-else
-    :class="['studio-layout']"
     ref="studioLayoutRef"
+    :class="['studio-layout']"
     @drop.prevent="captureDrop"
     @dragover.prevent
   >

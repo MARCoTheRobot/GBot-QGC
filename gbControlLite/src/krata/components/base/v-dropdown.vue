@@ -6,12 +6,12 @@
     </div>
     <div
       v-if="showDropDownOptions"
-      class="dropdown-options"
       v-click-away="
         () => {
           showDropDownOptions = false;
         }
       "
+      class="dropdown-options"
     >
       <div
         v-for="(item, index) in getOptions"
@@ -30,6 +30,9 @@ import KeyboardArrowDownIcon from "@/krata/components/icons/KeyboardArrowDownIco
 import { computed, ref } from "vue";
 
 export default {
+  components: {
+    KeyboardArrowDownIcon,
+  },
   props: {
     value: {
       type: String,
@@ -38,9 +41,6 @@ export default {
       type: Object,
       required: true,
     },
-  },
-  components: {
-    KeyboardArrowDownIcon,
   },
   setup(props, { emit }) {
     const showDropDownOptions = ref(false);

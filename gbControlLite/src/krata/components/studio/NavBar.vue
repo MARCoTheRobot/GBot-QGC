@@ -14,17 +14,17 @@
       >
         <input
           ref="fileNameRef"
-          class="filename"
           v-model="filename"
+          class="filename"
           :readonly="readonly"
-          @blur="updateFilename"
           placeholder="Enter File Name"
-        />
+          @blur="updateFilename"
+        >
         <input
           v-if="accessFlags.canChangeProjectName"
           v-show="false"
           type="submit"
-        />
+        >
       </form>
       <lock-icon
         v-if="!accessFlags.canChangeProjectName"
@@ -64,7 +64,7 @@
           </p>
         </div>
       </div>
-      <div v-else class="view-options"></div>
+      <div v-else class="view-options" />
     </div>
     <div class="map-options">
       <button class="btn-download" @click="toggleDownloadOptions">
@@ -72,17 +72,17 @@
         Export
         <KeyboardArrowIcon :size="14" />
       </button>
-      <a class="github-link" href="https://github.com/haxzie/krata" target="_blank"><GitHubIcon class="icon" :size="20"/></a>
+      <a class="github-link" href="https://github.com/haxzie/krata" target="_blank"><GitHubIcon class="icon" :size="20" /></a>
       <!-- <button class="btn-share" @click="$emit('share')">
         <span>Share</span><ShareIcon clas="icon" :size="18" />
       </button> -->
       <DownloadOptions
         v-if="showDownloadOptions"
         @close="showDownloadOptions = false"
-        @saveLocal="saveFile"
-        @saveGeoJson="saveGeoJson"
-        @saveKML="saveKML"
-        @saveScreenshot="saveScreenshot"
+        @save-local="saveFile"
+        @save-geo-json="saveGeoJson"
+        @save-k-m-l="saveKML"
+        @save-screenshot="saveScreenshot"
       />
     </div>
   </div>

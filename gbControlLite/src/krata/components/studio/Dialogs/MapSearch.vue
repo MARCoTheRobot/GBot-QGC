@@ -8,8 +8,8 @@
           v-model="searchQuery"
           type="text"
           placeholder="Search placess..."
-        />
-        <button type="submit" v-show="false"/>
+        >
+        <button v-show="false" type="submit" />
         <button class="close-btn" @click="$emit('close')">
           <ClearIcon size="20" />
         </button>

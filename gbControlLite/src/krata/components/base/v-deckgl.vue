@@ -77,6 +77,48 @@ export default {
       default: false,
     },
   },
+  watch: {
+    /**
+     * Whenever the layer prop changes,update the layers of deck.gl
+     */
+    layers(newLayers) {
+      this.deck.setProps({
+        layers: newLayers,
+      });
+    },
+    /**
+     * Update the viewstate of deckgl whenever the prop changes
+     */
+    viewState(newViewState) {
+      this.deck.setProps({
+        viewState: {
+          ...newViewState,
+          // add flyto transitions whenever the viewstates change
+          // additionally this to work, the user needs to specify the transitionDuration
+          // within the newViewState
+          // transitionInterpolator: new FlyToInterpolator(),
+        },
+      });
+    },
+    /**
+     * Updates the effexts of deck.gl whenever the prop changes
+     */
+    effects(newEffects) {
+      this.deck.setProps({
+        effects: newEffects,
+      });
+    },
+  },
+  created() {
+    // needs to be a non-reactive element
+    this.deck = null;
+  },
+  mounted() {
+    this.deck = this.initializeDeck(this.viewState, this.layers);
+  },
+  unmounted() {
+    this.deck.finalize();
+  },
   methods: {
     /**
      * Initializes a new deck.gl instance with specified initialViewState and Layers
@@ -126,64 +168,22 @@ export default {
       }
     },
   },
-  watch: {
-    /**
-     * Whenever the layer prop changes,update the layers of deck.gl
-     */
-    layers(newLayers) {
-      this.deck.setProps({
-        layers: newLayers,
-      });
-    },
-    /**
-     * Update the viewstate of deckgl whenever the prop changes
-     */
-    viewState(newViewState) {
-      this.deck.setProps({
-        viewState: {
-          ...newViewState,
-          // add flyto transitions whenever the viewstates change
-          // additionally this to work, the user needs to specify the transitionDuration
-          // within the newViewState
-          // transitionInterpolator: new FlyToInterpolator(),
-        },
-      });
-    },
-    /**
-     * Updates the effexts of deck.gl whenever the prop changes
-     */
-    effects(newEffects) {
-      this.deck.setProps({
-        effects: newEffects,
-      });
-    },
-  },
-  created() {
-    // needs to be a non-reactive element
-    this.deck = null;
-  },
-  mounted() {
-    this.deck = this.initializeDeck(this.viewState, this.layers);
-  },
-  unmounted() {
-    this.deck.finalize();
-  },
 };
 </script>
 
 <template>
   <div id="deckgl" class="deckgl-container" :width="width" :height="height">
     <!-- To be displayed on the background of the visualization/deck instance -->
-    <slot name="background"></slot>
+    <slot name="background" />
     <!-- Normal slots, which will always be displayed on the background of the visualization/deck instance -->
-    <slot></slot>
+    <slot />
     <canvas
       id="deck-canvas"
       ref="canvas"
       @contextmenu="handleContextMenu"
-    ></canvas>
+    />
     <!-- To be displayed on the foreground of the visualization/deck instance -->
-    <slot name="foreground"></slot>
+    <slot name="foreground" />
   </div>
 </template>
 

@@ -13,7 +13,7 @@
             :src="styles[activeStyle].image"
             :alt="styles[activeStyle].name"
             class="thumbnail"
-          />
+          >
           <dl>
             <dt>{{ styles[activeStyle].name }}</dt>
             <dd>Mapbox style</dd>
@@ -24,12 +24,12 @@
         </div>
         <div
           v-if="showDropDownOptions"
-          class="dropdown-options"
           v-click-away="
             () => {
               showDropDownOptions = false;
             }
           "
+          class="dropdown-options"
         >
           <div
             v-for="item in Object.values(styles)"
@@ -37,7 +37,7 @@
             class="item"
             @click="selectActiveMapStyle(item.id)"
           >
-            <img :src="item.image" :alt="item.name" class="thumbnail" />
+            <img :src="item.image" :alt="item.name" class="thumbnail">
             <dl>
               <dt>{{ item.name }}</dt>
               <dd>Mapbox style</dd>
@@ -49,9 +49,9 @@
     <v-section title="Map Labels">
       <div class="item-row">
         <VCheckBox
-          :modelValue="showMapLabels"
-          @update:modelValue="(value) => setShowMapLabels(value)"
+          :model-value="showMapLabels"
           label="Show Map Labels"
+          @update:model-value="(value) => setShowMapLabels(value)"
         />
       </div>
     </v-section>
@@ -65,9 +65,9 @@
       </div> -->
       <div class="item-row">
         <VCheckBox
-          :modelValue="getShowPropertiesPopup"
-          @update:modelValue="(value) => setShowPropertiesPopup(value)"
+          :model-value="getShowPropertiesPopup"
           label="Show Properties on Hover"
+          @update:model-value="(value) => setShowPropertiesPopup(value)"
         />
       </div>
     </v-section>

@@ -40,8 +40,8 @@
       <!--Reconnect to MARCo sidebar-->
       <Sidebar v-model:visible="userStore.reconnectDialog" header="Can't find a MARCo" position="bottom">
         <!--State = 0 - options for reconnecting or adding MARCo-->
-        <div class="p-4" v-if="reconnectMARCoState === 0">
-          <EmptyComponent :msg="t(`networkSetup.couldNotFind`)"/>
+        <div v-if="reconnectMARCoState === 0" class="p-4">
+          <EmptyComponent :msg="t(`networkSetup.couldNotFind`)" />
           <div class="flex flex-col w-full gap-2">
             <Button :label="t(`networkSetup.connectToPrevious`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-search-plus" text @click="openSearchPreviousMARCo" />
             <Button :label="t(`networkSetup.addNewMARCo`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-user-plus" text @click="reconnectMARCoState = 1" />
@@ -49,15 +49,15 @@
           </div>
         </div>
         <!--State = 1 - bluetooth network setup-->
-        <NetworkSetup :open="reconnectMARCoState === 1"  v-if="reconnectMARCoState === 1" />
+        <NetworkSetup v-if="reconnectMARCoState === 1" :open="reconnectMARCoState === 1" />
 
         <!--State = 2 - Scan to see if previous docks exist in the realtime database-->
-        <div class="p-4" v-if="reconnectMARCoState === 2">
-          <EmptyComponent :msg="`Pending User Scan Results: ${userStore.userScanResultsPending}; Single User Scan Results: ${userStore.userScanResultsSingle}; Multiple User Scan Results: ${userStore.userScanResultsMultiple};`"/>
+        <div v-if="reconnectMARCoState === 2" class="p-4">
+          <EmptyComponent :msg="`Pending User Scan Results: ${userStore.userScanResultsPending}; Single User Scan Results: ${userStore.userScanResultsSingle}; Multiple User Scan Results: ${userStore.userScanResultsMultiple};`" />
         </div>
 
         <!--State = 3 - Multiple previous dock results were found, show how many and prompt the user-->
-        <div class="p-4" v-if="reconnectMARCoState === 3">
+        <div v-if="reconnectMARCoState === 3" class="p-4">
           <EmptyComponent :msg="`There are ${userStore.webDockResults.length} previous connections found. It will take up to ${Math.ceil(userStore.webDockResults.length * 4 / 60) } minutes to check them.`" :action1="openCheckPreviousMARCos" :action1-label="t(`util.start`).toLocaleUpperCase()" />
           <div class="flex flex-row justify-between w-full">
             <Button :label="t(`util.start`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-search-plus" text @click="openCheckPreviousMARCos" />
@@ -66,23 +66,23 @@
         </div>
 
         <!--State = 4 - Scanning previously connected MARCo's-->
-        <div class="p-4" v-if="reconnectMARCoState === 4">
-          <EmptyComponent :msg="`Checking previous MARCos... Please make sure the one you want to connect to is powered on and connected to wifi.`"/>
-          <ProgressBar :value="(userStore.liveDockCheck.index + 1) / (userStore.webDockResults.length)">{{ userStore.liveDockCheck.index + 1 }} /{{ userStore.webDockResults.length}}</ProgressBar>
+        <div v-if="reconnectMARCoState === 4" class="p-4">
+          <EmptyComponent :msg="`Checking previous MARCos... Please make sure the one you want to connect to is powered on and connected to wifi.`" />
+          <ProgressBar :value="(userStore.liveDockCheck.index + 1) / (userStore.webDockResults.length)">{{ userStore.liveDockCheck.index + 1 }} /{{ userStore.webDockResults.length }}</ProgressBar>
             <Panel header="Stats for Nerds" toggleable :collapsed="true" class="w-full">
-              <p>{{userStore.liveDockCheck.message}} {{ userStore.pingMsg }}</p>
+              <p>{{ userStore.liveDockCheck.message }} {{ userStore.pingMsg }}</p>
             </Panel>
       
         </div>
 
         <!--State = 5 - Found a previously connected MARCo - proceed to refresh window-->
-        <div class="p-4" v-if="reconnectMARCoState === 5">
-          <EmptyComponent :msg="`Found a MARCo! This window will refresh shortly.`" :lottie="checkbox1"/>
+        <div v-if="reconnectMARCoState === 5" class="p-4">
+          <EmptyComponent :msg="`Found a MARCo! This window will refresh shortly.`" :lottie="checkbox1" />
         </div>
 
         <!--State = 6 - Could not find a previously connected MARCo-->
-        <div class="p-4" v-if="reconnectMARCoState === 6">
-          <EmptyComponent :msg="`Could not find any previously connected MARCos...`"/>
+        <div v-if="reconnectMARCoState === 6" class="p-4">
+          <EmptyComponent :msg="`Could not find any previously connected MARCos...`" />
           <div class="flex flex-row justify-between w-full">
             <Button :label="t(`util.start`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-search-plus" text @click="reconnectMARCoState = 1" />
             <Button :label="t(`util.cancel`).toLocaleUpperCase()" class="w-full" icon="pi pi-wrench" severity="secondary" text />

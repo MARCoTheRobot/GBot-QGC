@@ -24,11 +24,11 @@
           </div>
           <div class="copy-link">
             <input
-              type="text"
               ref="linkInputRef"
               v-model="projectLink"
+              type="text"
               :readonly="true"
-            />
+            >
             <button class="copy-btn" @click="copyLink">{{ copyText }}</button>
           </div>
         </div>
@@ -44,18 +44,18 @@
             <div class="input-wrapper">
               <label for="title">Map Title</label>
               <v-input
+                id="title"
                 v-model="title"
                 type="text"
-                id="title"
                 placeholder="Enter the title for your map"
               />
             </div>
             <div class="input-wrapper">
               <label for="description">Description</label>
               <v-textarea
+                id="description"
                 v-model="description"
                 type="text"
-                id="description"
                 placeholder="Describe your map. You may add #hastags as well."
               />
             </div>
@@ -63,7 +63,7 @@
               You hhave to republish your map for any further changes to be reflected back on your community page
             </div>
             <div class="button-wrapper">
-              <v-button :text="'Publish'" :isLoading="isPublishing"/>
+              <v-button :text="'Publish'" :is-loading="isPublishing" />
             </div>
           </form>
         </div>

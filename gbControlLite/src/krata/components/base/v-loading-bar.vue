@@ -1,5 +1,5 @@
 <template>
-  <div class="continuous-1"></div>
+  <div class="continuous-1" />
 </template>
 
 <script>

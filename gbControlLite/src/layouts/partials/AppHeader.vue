@@ -5,32 +5,32 @@
     <div class="flex items-center gap-2">
       <!--Check if video is active and add delay-->
       <IconVideo class="w-8 h-8" />
-      <span :class="`w-4 h-4 ${dotColor(robot.videoActive)} rounded-full`"></span>
+      <span :class="`w-4 h-4 ${dotColor(robot.videoActive)} rounded-full`" />
 
       <!--Audio on-->
-      <IconVolume class="w-8 h-8"/>
-      <span :class="`w-4 h-4 bg-red-500 rounded-full`"></span>
+      <IconVolume class="w-8 h-8" />
+      <span :class="`w-4 h-4 bg-red-500 rounded-full`" />
 
       <!--Transcript active-->
-      <IconTextCaption class="w-8 h-8"/>
-      <span class="w-4 h-4 bg-red-500 rounded-full"></span>
+      <IconTextCaption class="w-8 h-8" />
+      <span class="w-4 h-4 bg-red-500 rounded-full" />
 
       <!--Motors active-->
-      <IconScooterElectric class="w-8 h-8"/>
+      <IconScooterElectric class="w-8 h-8" />
       <span :class="`px-2 ${robot.motorsActive ? 'bg-green-500':'bg-red-500'} rounded-full`">{{ robot.m1Speed.toFixed(1) }}</span>
       <span :class="`px-2 ${robot.motorsActive ? 'bg-green-500':'bg-red-500'} rounded-full`">{{ robot.m2Speed.toFixed(1) }}</span>
       
 
       <!--Robot Pitch-->
-      <IconAngle class="w-8 h-8"/>
+      <IconAngle class="w-8 h-8" />
       <span class="w-4 h-4 rounded-full">{{ robot.robotRoll.toFixed(1) }}°</span>
 
       <!--External temperature-->
-      <IconThermometer class="w-8 h-8"/>
+      <IconThermometer class="w-8 h-8" />
       <span :class="`px-2 ${tempColor(robot.internalTemperature)} rounded-full`">{{ robot.internalTemperature.toFixed(0) }}°</span>
 
       <!--CPU Temperature-->
-      <IconCpu class="w-8 h-8"/>
+      <IconCpu class="w-8 h-8" />
       <span :class="`px-2 ${tempColor(robot.cpuTemperature)} rounded-full`">{{ robot.cpuTemperature.toFixed(0) }}°</span>
 
 

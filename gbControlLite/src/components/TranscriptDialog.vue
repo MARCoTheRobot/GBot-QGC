@@ -17,14 +17,14 @@
                 <p class="text-sm italic font-light">Send a first message to the robot!</p>
             </div>
             <div v-else>
-                <div :class="`flex flex-row justify-${transcript.type === 'user' ? 'end' : 'start'} w-full`"
-                    v-for="transcript in settings.transcript.messages" :key="transcript.id">
+                <div v-for="transcript in settings.transcript.messages"
+                    :key="transcript.id" :class="`flex flex-row justify-${transcript.type === 'user' ? 'end' : 'start'} w-full`">
                     <div class="flex flex-col gap-1">
 
-                        <p class="text-sm italic font-light rounded" v-if="transcript.type === 'status'">Status update
+                        <p v-if="transcript.type === 'status'" class="text-sm italic font-light rounded">Status update
                         </p>
-                        <p class="text-sm italic font-light rounded"
-                            v-else-if="transcript.type === 'liveTranscription'">
+                        <p v-else-if="transcript.type === 'liveTranscription'"
+                            class="text-sm italic font-light rounded">
                             Transcribing</p>
                         <p :class="messageClass(transcript)">{{ transcript.text }}</p>
                     </div>
@@ -33,9 +33,9 @@
         </div>
         <template #footer>
             <InputGroup>
-                <InputText v-model="nextMessage" placeholder="Send a message" />
+                <InputText v-model="nextMessage" placeholder="Send a message" @keyup.enter="send" />
                 <Button icon="pi pi-send" severity="secondary" @click="send" />
-                <Button icon="pi pi-microphone" severity="secondary" @click="speechToText"/>
+                <Button icon="pi pi-microphone" severity="secondary" @click="speechToText" />
             </InputGroup>
         </template>
 
@@ -115,7 +115,7 @@ else{
 
 const { mutate } = useMutation({
     mutationFn: async (text: string) => {
-        return  http({url:"https://us-central1-guardbot-qgc.cloudfunctions.net/commandConversation", method: "POST", data:{ text:text, sessionID: "1234" }});
+        return  http({url:"https://commandconversation-kl3exemiua-uc.a.run.app", method: "POST", data:{ text:text, sessionID: "1234" }});
     },
 
     onMutate: (text: string) => {

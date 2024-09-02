@@ -1,6 +1,6 @@
 <template>
   <div :class="['container', { small }, { xs }]">
-      <slot/>
+      <slot />
   </div>
 </template>
 

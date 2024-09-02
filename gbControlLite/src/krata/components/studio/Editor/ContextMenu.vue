@@ -14,9 +14,9 @@
     </div>
     <div class="options">
       <div
-        class="option"
         v-for="item in options"
         :key="item.id"
+        class="option"
         @click="selectOption(item.id)"
       >
         <component :is="item.icon" size="18" class="icon" />

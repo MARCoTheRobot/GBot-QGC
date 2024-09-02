@@ -4,16 +4,16 @@
       <v-color-picker
         :color="feature.properties.fillColor"
         :hide="feature.properties.hideFill"
-        @onChangeColor="updateFillColor"
-        @onChangeHide="updateHideFill"
+        @on-change-color="updateFillColor"
+        @on-change-hide="updateHideFill"
       />
     </v-section>
     <v-section v-if="enableLineProperties" :title="'Line Color'">
       <v-color-picker
         :color="feature.properties.lineColor"
         :hide="feature.properties.hideLine"
-        @onChangeColor="updateLineColor"
-        @onChangeHide="updateHideLine"
+        @on-change-color="updateLineColor"
+        @on-change-hide="updateHideLine"
       />
     </v-section>
     <!-- <v-section v-if="enableLineProperties" :title="'Line Width'">
@@ -29,8 +29,8 @@
         :value="feature.properties.pointRadius"
         :scale="feature.properties.radiusScale"
         :icon="'RadiusIcon'"
-        @onWidthChange="updatePointRadius"
-        @onScaleChange="updateRadiusScale"
+        @on-width-change="updatePointRadius"
+        @on-scale-change="updateRadiusScale"
       />
     </v-section>
   </div>

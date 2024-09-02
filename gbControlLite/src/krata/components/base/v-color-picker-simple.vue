@@ -6,8 +6,8 @@
       class="cp-custom"
       :format="'rgb'"
       :shape="'circle'"
-      :pickerType="'chrome'"
-      :useType="'pure'"
+      :picker-type="'chrome'"
+      :use-type="'pure'"
     />
   </div>
 </template>
