@@ -68,7 +68,7 @@ const initialize = async () => {
         await UDP.closeAllSockets();
         sock.value = await UDP.create({ properties: { name: "vHARV7", bufferSize: 655536 } });
         console.log("The socket is:", sock.value);
-        await UDP.bind({ socketId: sock.value.socketId, port: 8043 });
+        // await UDP.bind({ socketId: sock.value.socketId, port: 8043 });
         sockID = sock.value.socketId;
         // UDP.joinGroup({socketId: sock.value.socketId, address: serverAddress[0]});
         UDP.addListener('receive', (data) => {

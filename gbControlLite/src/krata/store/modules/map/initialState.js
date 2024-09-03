@@ -36,7 +36,7 @@ export const MAP_STYLES = [
   },
 ];
 
-export const DEFAULT_MAP_STYLE = "mapbox-simple";
+export const DEFAULT_MAP_STYLE = "mapbox-satellite-streets";
 
 export default function () {
   return {

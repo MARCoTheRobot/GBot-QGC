@@ -40,7 +40,7 @@
   </div>
   
   <!-- end of sidebar -->
-  <div class="mb-[64px]" />
+  <div class="mb-[44px]" />
 </template>
 
 <script setup lang="ts">

@@ -12,6 +12,8 @@ import { useMutation } from "@tanstack/vue-query";
 import { Preferences } from "@capacitor/preferences";
 import { v4 as uuidv4 } from "uuid";
 
+import { startingImage } from "@/data/videoLoading";
+
 import { EComm } from "@/utils/externalComm";
 
 import { useRoute, useRouter } from "vue-router";
@@ -21,7 +23,6 @@ const useRobotStore = defineStore("robot", () => {
   const route = useRoute();
   const router = useRouter();
   const toast = useToast();
-  
 
   const dataPrefix = {
     video: Buffer.from("\x00"),
@@ -38,7 +39,7 @@ const useRobotStore = defineStore("robot", () => {
 
   const state = ref(0);
   let stateSendInterval = setInterval(() => {
-    if(typeof(state.value) === 'number' && state.value > -1){
+    if (typeof state.value === "number" && state.value > -1) {
       camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
     }
   }, 500);
@@ -51,7 +52,7 @@ const useRobotStore = defineStore("robot", () => {
 
   /**
    * @function setState
-   * @param newState 
+   * @param newState
    * @description - Sets the state of the robot and sends the new state to the robot
    */
   const setState = (newState: any) => {
@@ -84,11 +85,11 @@ const useRobotStore = defineStore("robot", () => {
   const transcript = ref<string>("");
   const lastVideoTime = ref<any>(0);
   const MAX_VIDEO_TIMEOUT = 2;
-  const videoBuffer = ref<any>("");
+  const videoBuffer = ref<any>(startingImage);
 
   /**
    * @function camCommData
-   * @param data 
+   * @param data
    * @description - This function is called when data is received from the robot's Camera Communication
    */
   const camCommData = (data: any) => {
@@ -130,10 +131,9 @@ const useRobotStore = defineStore("robot", () => {
   const videoActive = ref(false);
   const videoActiveTimeout = ref<any>(0);
   watch(videoBuffer, (newVideoBuffer) => {
-    try{
+    try {
       clearTimeout(videoActiveTimeout.value);
-    }
-    catch(e){
+    } catch (e) {
       // console.log(e);
     }
     if (newVideoBuffer) {
@@ -152,10 +152,10 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
   const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["192.168.0.169", 8043], "v" + connectionPassword.value, false); // for testing
+  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  // const audioComm = new EComm(["192.168.0.169",8044], "a" + connectionPassword.value, false);
-    const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
+  // const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, false);
+  const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
   camComm.receiveLoop((data) => {
@@ -163,21 +163,51 @@ const useRobotStore = defineStore("robot", () => {
     camCommData(data);
   });
 
+  const audioContext = new AudioContext();
+  // let audioPlaying = false;
+  let nextAudioBuffer: any = null;
 
   /**
    * @function audioCommData
-   * @param data 
+   * @param data
    * @description - This function is called when data is received from the robot's Audio Communication
    */
   const audioCommData = (data: any) => {
-    // console.log("Received data:", data.toString());
+    // console.log("Received data eeffee:", data.toString());
     const dataPrefix2 = data.slice(0, 1);
     data = data.slice(1);
+    // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
     if (dataPrefix2.equals(dataPrefix["audio"])) {
-      // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
-      // console.log("Received video data");
-      console.log("Received audio data");
+      console.log("Prefix is audio eeffee")
+      console.log("Received audio data eeffee", data);
+      
+      // Convert the buffer to a Float32Array
+      const arr = new Float32Array(data);
+
+      // Amplify the audio data
+      // for (let i = 0; i < arr.length; i++) {
+      //   arr[i] = arr[i] * (multi * MAX_VOLUME + 1);
+      // }
+
+      // Create an AudioContext
+      // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Create an AudioBuffer
+      const audioBuffer = audioContext.createBuffer(1, arr.length, arr.length);
+      audioBuffer.getChannelData(0).set(arr);
+
+      // If the nextAudioBuffer does not exist, set it to the audioBuffer
+      // If the nextAudioBuffer DOES exist, add the audioBuffer to the nextAudioBuffer
+      if (!nextAudioBuffer) {
+        nextAudioBuffer = audioBuffer;
+      } else {
+        const newAudioBuffer = audioContext.createBuffer(1, nextAudioBuffer.length + audioBuffer.length, nextAudioBuffer.length + audioBuffer.length);
+        newAudioBuffer.getChannelData(0).set(nextAudioBuffer.getChannelData(0), 0);
+        newAudioBuffer.getChannelData(0).set(audioBuffer.getChannelData(0), nextAudioBuffer.length);
+        nextAudioBuffer = newAudioBuffer;
+      }
+    
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
       for (const [k, i] of Object.entries(parsedData)) {
@@ -192,8 +222,22 @@ const useRobotStore = defineStore("robot", () => {
     // console.log("Received:", data);
     audioCommData(data);
   });
-  // const camComm = ref("");
-  // const audioComm = ref("");
+
+  /**
+   * @function streamAudioBuffer
+   * @description - this loops through the audio buffers and plays them in order
+   */
+  const streamAudioBuffer = setInterval(() => {
+    if (nextAudioBuffer) {
+      console.log("#NO NEXT BUFFER#")
+      const source = audioContext.createBufferSource();
+      source.buffer = nextAudioBuffer;
+      source.connect(audioContext.destination);
+      source.start();
+      nextAudioBuffer = null;
+    }
+  }, 1000);
+  
 
   /**
    * ---------------------
@@ -203,14 +247,13 @@ const useRobotStore = defineStore("robot", () => {
    */
   // Initialize Joystick
   const joystick = ref([0, 0]);
-  // const useSendJoystick = (data: any) => {
-  //   console.log("Joystick updated:", data.value);
-  //   camComm.sendS(Buffer.concat([dataPrefix['json_data'], Buffer.from(JSON.stringify(data.value), 'utf-8')]));
-  // };
+
   // When the joystick is updated, send the new joystick data to the robot
   watch(joystick, (newJoystick) => {
     // console.log("Joystick updated:", newJoystick);
-    const data = JSON.stringify({"controls":newJoystick});
+    // The joystick x and y inputs are reversed for the virtual joystick versus the physical joystick, so we will need to flip the values
+    const sendJoystick = [newJoystick[1], -1 * newJoystick[0]];
+    const data = JSON.stringify({ controls: sendJoystick });
     // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
     // console.log("Returning the data to string AAAAA:", bufferData.toString());
@@ -256,11 +299,10 @@ const useRobotStore = defineStore("robot", () => {
    */
   const useMotorOverride = (data: any) => {
     console.log("Motor override:", data);
-    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({"controls":data}), "utf-8")]));
-  }
+    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ controls: data }), "utf-8")]));
+  };
 
   let motorOverrideInterval = 0;
-  
 
   /**
    * ---------------------
@@ -300,7 +342,6 @@ const useRobotStore = defineStore("robot", () => {
    * @param payload - The payload from the chatbot
    * @description - This function is used to handle payloads from the chatbot
    */
-
   const useHandlePayload = (payload: any) => {
     /**
      * There are three parts to the payload:
@@ -311,9 +352,8 @@ const useRobotStore = defineStore("robot", () => {
      *    - transcribe: boolean - A boolean to start or stop the transcription
      * 3 - params - The parameters from the chatbot, if any
      */
-    if(payload.payload){
+    if (payload.payload) {
       if (payload.payload.forceDrive) {
-        
         // If forceDrive is true, the robot will drive regardless of the current state
         // This is used to override the current state of the robot
         // The robot will drive with the joystick
@@ -342,7 +382,7 @@ const useRobotStore = defineStore("robot", () => {
 
         motorOverrideInterval = setInterval(() => {
           if (currSeconds < secondsRequired) {
-            useMotorOverride([ direction[0], direction[1] ]);
+            useMotorOverride([direction[0], direction[1]]);
             currSeconds += 0.5;
           } else {
             clearInterval(motorOverrideInterval);
@@ -351,26 +391,25 @@ const useRobotStore = defineStore("robot", () => {
           }
         }, 500);
       }
-      if(payload.payload.passthrough){
+      if (payload.payload.passthrough) {
         // If passthrough is true, the robot will send the payload to the robot as-is
         // This is used to send custom commands to the robot
         console.log("Sending passthrough:", payload.payload.passthrough);
         camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify(payload.payload.passthrough), "utf-8")]));
       }
-      if(payload.payload.transcribe){
+      if (payload.payload.transcribe) {
         // If transcribe is true, the robot will start or stop the transcription
         // This is used to start or stop the transcription
       }
-      if(payload.payload.speak){
+      if (payload.payload.speak) {
         // If speak is true, the robot will speak the text
         // This is used to make the robot speak
         useAudioCommand(payload.params.echo);
       }
+    } else {
+      return false;
     }
-    else{
-      return false
-    }
-  }
+  };
 
   /**
    * ---------------------
@@ -385,9 +424,8 @@ const useRobotStore = defineStore("robot", () => {
    */
   const useAudioCommand = (command: string) => {
     console.log("Sending audio command:", command);
-    audioComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({"command":command}), "utf-8")]));
-  }
-
+    audioComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ command: command }), "utf-8")]));
+  };
 
   /**
    * ---------------------
@@ -400,36 +438,32 @@ const useRobotStore = defineStore("robot", () => {
       return value;
     } else if (unit === "feet") {
       return value * 12;
-    }
-    else if (unit === "yards") {
+    } else if (unit === "yards") {
       return value * 36;
-    }
-     else if (unit === "cm") {
+    } else if (unit === "cm") {
       return value / 2.54;
     } else if (unit === "meter") {
       return value * 39.3701;
     } else {
       return value;
     }
-  }
+  };
 
   const directionToSign = (direction: string) => {
     if (direction === "forward") {
-      return [1, 1];
+      return [1, 0];
     } else if (direction === "backward") {
-      return [-1, -1];
-    } else if(direction === "left") {
       return [-1, 0];
-    }
-    else if(direction === "right") {
+    } else if (direction === "left") {
+      return [0, 1];
+    } else if (direction === "right") {
+      return [0, -1];
+    } else {
       return [1, 0];
     }
-    else {
-      return [1, 1];
-    }
-  }
+  };
 
-
+  // Return all public variables and functions
   return {
     camComm,
     audioComm,
@@ -443,7 +477,6 @@ const useRobotStore = defineStore("robot", () => {
     robotRoll,
     transcript,
     videoBuffer,
-    // useSendJoystick,
     motorSpeeds,
     motorSpeedData,
     motorsActive,

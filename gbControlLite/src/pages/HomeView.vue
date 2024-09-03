@@ -2,19 +2,19 @@
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		<!--Video display-->
 		<div class="fixed top-0 right-0 w-[78.333%] h-screen overflow-hidden z-0">
-			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}`" alt="PrimeVue logo" class="w-screen h-screen">
+			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}`" alt="PrimeVue logo" class="w-screen h-screen" />
 
 		</div>
 		
 		<!--Quick controls dock-->
 		<Dock :model="dockItems" position="bottom" class="z-1">
 			<template #icon="{ item }">
-				<div class="w-full" aria-haspopup="true" aria-controls="overlay_menu" @click="item.action($event)">
-				<img :src="item.icon" alt="icon" class="w-full">
+				<div class="w-full" @click="item.action($event)" aria-haspopup="true" aria-controls="overlay_menu">
+				<img :src="item.icon" alt="icon" class="w-full" />
 				</div>
 			</template>
 		</Dock>
-		<Menu id="overlay_menu" ref="settingsMenu" :model="menuItems" :popup="true" />
+		<Menu ref="settingsMenu" id="overlay_menu" :model="menuItems" :popup="true" />
 
 
 		<!--Confirm video recording popup-->

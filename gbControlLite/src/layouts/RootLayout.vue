@@ -12,7 +12,7 @@
 	
 	<div class="flex-col w-5/6 bg-slate-900">
 		<AppHeader type="internal" />
-		<div class="flex-initial h-full p-4 overflow-x-hidden overflow-y-auto">
+		<div class="flex-initial h-full overflow-x-hidden overflow-y-auto">
 			<router-view v-slot="{ Component }">
 		<transition name="slide">
 			<component :is="Component" class="w-full" />

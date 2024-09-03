@@ -42,8 +42,10 @@ let videoFrame = 0;
 // emits on new datagram msg
 server.on('message',function(msg,info){
 // console.log("The info is : ",info);
-//   console.log('Data received from client : ' + msg.toString('utf-8'));
+  console.log('Data received from client : ' + msg.toString('utf-8'));
   console.log('Received %d bytes from %s:%d\n',msg.length, info.address, info.port);
+  // info.port = info.port - 1000;
+  // info.port = info.port + 1000;
 
   const dataString = msg.toString('utf-8');
   let optionalJsonData = null;
@@ -75,7 +77,7 @@ const jsonData = {
 }
 const returnMessageBuffer = Buffer.concat([returnMessage,Buffer.from(JSON.stringify(jsonData))]) ;
 // console.log('Sending msg to client',returnMessageBuffer.toString('utf-8'), info.address, 8043);
-server.send(returnMessageBuffer,8043,info.address,function(error){
+server.send(returnMessageBuffer,info.port,info.address,function(error){
   if(error){
     client.close();
   }else{
@@ -94,7 +96,7 @@ if (!appendVideo) {
     // console.log('Video frame ', nextVideoFrame, ' is ', Buffer.from(videoData).length, ' bytes long');
     const videoMessage = Buffer.concat([Buffer.from('<HARV7>'),dataPrefix1.data,dataPrefix2.video,Buffer.from(videoData)]);
     // console.log('Sending video frame to client', videoMessage.toString('utf-8'), info.address, 8043);
-    server.send(videoMessage,8043,info.address,function(error){
+    server.send(videoMessage,info.port,info.address,function(error){
       if(error){
         client.close();
       }else{
@@ -139,3 +141,54 @@ const DUMMY_TEXT = "Lorum ipsum dolor sit amet, consectetur adipiscing elit. The
 
 const DUMMY_TEXT_ARRAY = DUMMY_TEXT.split(' ');
 let dummyTextIndex = 0;
+
+
+
+const audioServer = udp.createSocket('udp4');
+//emits when socket is ready and listening for datagram msgs
+audioServer.on('listening',function(){
+  var address = server.address();
+  var port = address.port;
+  var family = address.family;
+  var ipaddr = address.address;
+  server.setSendBufferSize(65553);
+  server.setRecvBufferSize(65553);
+  console.log('Server is listening at port' + port);
+  console.log('Server ip :' + ipaddr);
+  console.log('Server is IP4/IP6 : ' + family);
+  console.log('Server accepts buffer size : ' + server.getRecvBufferSize());
+  console.log('Server sends buffer size : ' + server.getSendBufferSize());
+});
+
+
+let sendingAudio = false;
+audioServer.on('message',function(msg,info){
+  console.log('Received %d bytes from %s:%d\n',msg.length, info.address, info.port);
+  // info.port = info.port - 1000;
+  // info.port = info.port + 1000;
+
+  // Generate a sine wave in audio buffer format for the audio to play
+  const audioData = new Uint8Array(44100);
+  for (let i = 0; i < audioData.length; i++) {
+    audioData[i] = Math.floor(128 + 127 * Math.sin(i / 44100 * 2 * Math.PI * 440));
+  }
+  const audioBuffer = Buffer.from(audioData.buffer);
+
+  const audioMessage = Buffer.concat([Buffer.from('<HARV7>'),dataPrefix1.data,dataPrefix2.audio,audioBuffer]);
+  // console.log('Sending audio to client', audioMessage.toString('utf-8'), info.address, 8043);
+
+  if(!sendingAudio){
+    sendingAudio = true;
+    setInterval(() => {
+  server.send(audioMessage,info.port,info.address,function(error){
+    if(error){
+      client.close();
+    }else{
+      console.log('Audio data sent !!!');
+    }
+  })
+}, 500);
+}
+});
+
+audioServer.bind(8044);

@@ -6,6 +6,7 @@
     :class="['studio-layout']"
     @drop.prevent="captureDrop"
     @dragover.prevent
+    class="dark"
   >
     <nav-bar @share="showShareModal = true" />
     <div class="content-layout">

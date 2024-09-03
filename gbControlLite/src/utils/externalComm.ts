@@ -83,10 +83,10 @@ export class EComm {
         let lastAckTime = 0;
         const maxAckTime = 1;
         UDP.addListener('receive', (data:any) => {
-            console.log("Received data, data:", data);
+            // console.log("Received data, data:", data);
             const data1 = Buffer.from(data.buffer, 'base64');
             const rinfo = {address: this.serverAddress[0], port: this.serverAddress[1]};
-            if ((rinfo.address === this.serverAddress[0] && rinfo.port === this.serverAddress[1]) || true) {
+            if ((rinfo.address === this.serverAddress[0] && rinfo.port === this.serverAddress[1])) {
                 console.log("Made it to decode data");
                 const decodeData = data1.slice(0, this.connectId.length).toString();
                 console.log("Decoded data:", decodeData);

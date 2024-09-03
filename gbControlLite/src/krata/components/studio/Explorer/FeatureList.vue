@@ -21,8 +21,8 @@
     <div v-else class="not-found">
       <img src="@/krata/assets/map.png" alt="empty" class="empty-icon">
       <p class="description">
-        Click on the <strong>tools</strong> on top to start creating features or
-        drag and drop a <strong>.geojson</strong>,  <strong>.json</strong>or <strong>.csv</strong> file
+        Click on the <strong>tools</strong> on top to start path planning for your robot or
+        drag and drop a <strong>.geojson</strong>,  <strong>.json</strong> or <strong>.csv</strong> file
         to start
       </p>
     </div>
