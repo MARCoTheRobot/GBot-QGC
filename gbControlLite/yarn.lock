@@ -5940,6 +5940,11 @@ array-union@^2.1.0:
   resolved "https://registry.yarnpkg.com/array-union/-/array-union-2.1.0.tgz#b798420adbeb1de828d84acd8a2e23d3efe85e8d"
   integrity sha512-HGyxoOTYUyCM6stUe6EJgnd4EoewAI7zMdfqO+kGjnlZmBDz/cR5pf8r/cR4Wq60sL/p0IkcjUEEPwS3GFrIyw==
 
+arraybuffer-to-audiobuffer@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/arraybuffer-to-audiobuffer/-/arraybuffer-to-audiobuffer-0.0.5.tgz#928b16fe3054f7d18c058b7933739cf0488b1017"
+  integrity sha512-bhSUiHVdspNVh5imbfUzwkj6bbLgryVwPcF9dkG2qbJ0JBvRboDNLOcL9eHYPNJJAbsKLuRT2+DQ9VsDnfQ7fQ==
+
 arraybuffer.prototype.slice@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/arraybuffer.prototype.slice/-/arraybuffer.prototype.slice-1.0.3.tgz#097972f4255e41bc3425e37dc3f6421cf9aefde6"

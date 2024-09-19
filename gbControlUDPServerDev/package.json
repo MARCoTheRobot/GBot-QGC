@@ -7,6 +7,9 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "dgram": "^1.0.1"
+    "cors": "^2.8.5",
+    "dgram": "^1.0.1",
+    "express": "^4.21.0",
+    "node-wav": "^0.0.2"
   }
 }

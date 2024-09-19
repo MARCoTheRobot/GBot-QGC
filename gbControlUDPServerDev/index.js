@@ -1,6 +1,11 @@
 var udp = require('dgram');
 const fs = require('fs');
+const path = require('path');
 
+const audioPath = path.join(__dirname, 'assets', 'audio', 'Calling_32kbs.wav');
+
+const SOUND_1_BUFFER = fs.readFileSync(audioPath);
+let soundInterval = 0;
 // --------------------creating a udp server --------------------
 
 // creating a udp server
@@ -142,6 +147,7 @@ const DUMMY_TEXT = "Lorum ipsum dolor sit amet, consectetur adipiscing elit. The
 const DUMMY_TEXT_ARRAY = DUMMY_TEXT.split(' ');
 let dummyTextIndex = 0;
 
+let audioMessage = null;
 
 
 const audioServer = udp.createSocket('udp4');
@@ -168,18 +174,30 @@ audioServer.on('message',function(msg,info){
   // info.port = info.port + 1000;
 
   // Generate a sine wave in audio buffer format for the audio to play
-  const audioData = new Uint8Array(44100);
+  const audioData = new Uint8Array(16000);
   for (let i = 0; i < audioData.length; i++) {
-    audioData[i] = Math.floor(128 + 127 * Math.sin(i / 44100 * 2 * Math.PI * 440));
+    audioData[i] = Math.floor(128 + 127 * Math.sin(i / 16000 * 2 * Math.PI * 780));
   }
-  const audioBuffer = Buffer.from(audioData.buffer);
-
-  const audioMessage = Buffer.concat([Buffer.from('<HARV7>'),dataPrefix1.data,dataPrefix2.audio,audioBuffer]);
-  // console.log('Sending audio to client', audioMessage.toString('utf-8'), info.address, 8043);
+  // const audioBuffer = Buffer.from(audioData.buffer);
+  // console.log('Audio buffer is ', audioBuffer);
+ 
+  // console.log('Sending audio to client', audioMessage, info.address, 8043);
 
   if(!sendingAudio){
     sendingAudio = true;
     setInterval(() => {
+      if(soundInterval < SOUND_1_BUFFER.length / 12800){
+        soundInterval++;
+        console.log("Sound interval is ", soundInterval);
+      }
+      else{
+        soundInterval = 0;
+      }
+      const audioBuffer = SOUND_1_BUFFER.slice(12800 * soundInterval, 12800 * (soundInterval + 1));
+      console.log('Audio buffer is ', audioBuffer);
+    
+      audioMessage = Buffer.concat([Buffer.from('<HARV7>'),dataPrefix1.data,dataPrefix2.audio,audioData]);
+
   server.send(audioMessage,info.port,info.address,function(error){
     if(error){
       client.close();
@@ -187,7 +205,7 @@ audioServer.on('message',function(msg,info){
       console.log('Audio data sent !!!');
     }
   })
-}, 500);
+},  400 );
 }
 });
 

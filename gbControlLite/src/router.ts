@@ -7,6 +7,8 @@ import StartVue from "@/pages/StartView.vue";
 import HomeView from "@/pages/HomeView.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
 import TestView from "@/pages/TestView.vue";
+import TestAudioView from "@/pages/TestAudioView.vue";
+import TestAudio2 from "@/pages/TestAudio2.vue";
 // import MapStudio from "./pages/MapStudio.vue";
 
 // const routes: RouteRecordRaw[] = [
@@ -130,7 +132,13 @@ const routes: RouteRecordRaw[] = [
   },
   {
 		path: "/test", name: "test", component: TestView,
-	}
+	},
+  {
+    path: "/test-audio", name: "test-audio", component: TestAudioView,
+  },
+  {
+    path: "/test-audio-2", name: "test-audio-2", component: TestAudio2,
+  }
 ];
 
 const router = createRouter({

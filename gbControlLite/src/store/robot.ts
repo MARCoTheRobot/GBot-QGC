@@ -122,7 +122,12 @@ const useRobotStore = defineStore("robot", () => {
             // this.state = i;
           }
         } else if (k === "transcript") {
-          transcript.value = i + " ";
+          try{
+            transcript.value = JSON.stringify(i.text) + " ";
+          }
+          catch(err){
+            transcript.value = JSON.stringify(i);
+          }
         }
       }
     }
@@ -152,10 +157,10 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
   const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
+  // const camComm = new EComm(["10.204.56.41", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  // const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, false);
-  const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
+  const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
+  // const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
   camComm.receiveLoop((data) => {
@@ -163,15 +168,110 @@ const useRobotStore = defineStore("robot", () => {
     camCommData(data);
   });
 
-  const audioContext = new AudioContext();
+  const lastAudioTime = ref(0);
+  const SAMPLE_RATE = ref(16000);
+  const CHUNK_SIZE = 3200;
+  const NUM_CHANNELS = 1;
+  const AUDIO_CONTEXT = new AudioContext({sampleRate: SAMPLE_RATE.value});
   // let audioPlaying = false;
-  let nextAudioBuffer: any = null;
+  const nextAudioBuffer: any = null;
 
   /**
    * @function audioCommData
    * @param data
    * @description - This function is called when data is received from the robot's Audio Communication
    */
+  const audioCommDataSAFE = (data: any) => {
+    // console.log("Received data eeffee:", data.toString());
+    const dataPrefix2 = data.slice(0, 1);
+    data = data.slice(1);
+    // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
+
+    if (dataPrefix2.equals(dataPrefix["audio"])) {
+      console.log("MSG 123: Prefix is audio eeffee")
+      console.log("MSG 123: Received audio data eeffee", data);
+      
+      const audioBuffer = AUDIO_CONTEXT.createBuffer(NUM_CHANNELS, data.length, AUDIO_CONTEXT.sampleRate);
+        for (let channel = 0; channel < NUM_CHANNELS; channel++) {
+            const nowBuffering = audioBuffer.getChannelData(channel);
+            for (let i = 0; i < data.length; i++) {
+                // nowBuffering[i] = (data[i * 2] | (data[i * 2 + 1] << 8)) / 32768.0; // Convert from 16-bit PCM to float
+                nowBuffering[i] = data[i] / 128.0 - 1.0; // Convert from 16-bit PCM to float 
+            }
+        }
+        const source = AUDIO_CONTEXT.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(AUDIO_CONTEXT.destination);
+        source.start();
+    
+    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
+      const parsedData = JSON.parse(data.toString());
+      for (const [k, i] of Object.entries(parsedData)) {
+        if (k === "transcript") {
+          try{
+          transcript.value = JSON.stringify(i.text);
+        }
+        catch(err){
+          transcript.value = JSON.stringify(i);
+        }
+        }
+      }
+    }
+  };
+
+  
+function buildWaveHeader(opts) {
+  const numFrames =      opts.numFrames;
+  const numChannels =    opts.numChannels || 2;
+  const sampleRate =     opts.sampleRate || 44100;
+  const bytesPerSample = opts.bytesPerSample || 2;
+  const format =         opts.format
+
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numFrames * blockAlign;
+
+  const buffer = new ArrayBuffer(44);
+  const dv = new DataView(buffer);
+
+  let p = 0;
+
+  function writeString(s) {
+    for (let i = 0; i < s.length; i++) {
+      dv.setUint8(p + i, s.charCodeAt(i));
+    }
+    p += s.length;
+}
+
+  function writeUint32(d) {
+    dv.setUint32(p, d, true);
+    p += 4;
+  }
+
+  function writeUint16(d) {
+    dv.setUint16(p, d, true);
+    p += 2;
+  }
+
+  writeString('RIFF');              // ChunkID
+  writeUint32(dataSize + 36);       // ChunkSize
+  writeString('WAVE');              // Format
+  writeString('fmt ');              // Subchunk1ID
+  writeUint32(16);                  // Subchunk1Size
+  writeUint16(format);              // AudioFormat
+  writeUint16(numChannels);         // NumChannels
+  writeUint32(sampleRate);          // SampleRate
+  writeUint32(byteRate);            // ByteRate
+  writeUint16(blockAlign);          // BlockAlign
+  writeUint16(bytesPerSample * 8);  // BitsPerSample
+  writeString('data');              // Subchunk2ID
+  writeUint32(dataSize);            // Subchunk2Size
+
+  return buffer;
+}
+
+const myAudio = new Audio();
+
   const audioCommData = (data: any) => {
     // console.log("Received data eeffee:", data.toString());
     const dataPrefix2 = data.slice(0, 1);
@@ -179,44 +279,47 @@ const useRobotStore = defineStore("robot", () => {
     // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
     if (dataPrefix2.equals(dataPrefix["audio"])) {
-      console.log("Prefix is audio eeffee")
-      console.log("Received audio data eeffee", data);
+      console.log("MSG 123: Prefix is audio eeffee")
+      console.log("MSG 123: Received audio data eeffee", data);
       
-      // Convert the buffer to a Float32Array
-      const arr = new Float32Array(data);
+      const sampleRate = 16000 // samples per second
+  const numChannels = 1 // mono or stereo
+  const isFloat = false  // integer or floating point
+  const [type, format] = isFloat ? [Float32Array, 3] : [Uint8Array, 1];
+  
+  const wavHeader = new Uint8Array(buildWaveHeader({
+    numFrames: data.byteLength / type.BYTES_PER_ELEMENT,
+    bytesPerSample: type.BYTES_PER_ELEMENT,
+    sampleRate,
+    numChannels,
+    format
+  }));
 
-      // Amplify the audio data
-      // for (let i = 0; i < arr.length; i++) {
-      //   arr[i] = arr[i] * (multi * MAX_VOLUME + 1);
-      // }
-
-      // Create an AudioContext
-      // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-      // Create an AudioBuffer
-      const audioBuffer = audioContext.createBuffer(1, arr.length, arr.length);
-      audioBuffer.getChannelData(0).set(arr);
-
-      // If the nextAudioBuffer does not exist, set it to the audioBuffer
-      // If the nextAudioBuffer DOES exist, add the audioBuffer to the nextAudioBuffer
-      if (!nextAudioBuffer) {
-        nextAudioBuffer = audioBuffer;
-      } else {
-        const newAudioBuffer = audioContext.createBuffer(1, nextAudioBuffer.length + audioBuffer.length, nextAudioBuffer.length + audioBuffer.length);
-        newAudioBuffer.getChannelData(0).set(nextAudioBuffer.getChannelData(0), 0);
-        newAudioBuffer.getChannelData(0).set(audioBuffer.getChannelData(0), nextAudioBuffer.length);
-        nextAudioBuffer = newAudioBuffer;
-      }
+  console.log("The wavHeader is:", wavHeader);
+  // create WAV file with header and downloaded PCM audio
+  const wavBytes = new Uint8Array(wavHeader.length + data.byteLength)
+  wavBytes.set(wavHeader, 0)
+  wavBytes.set(data, wavHeader.length)
+const base64String = btoa(String.fromCharCode(...wavBytes));
+const dataURI = `data:audio/wav;base64,${base64String}`;
+myAudio.src = dataURI;
+    myAudio.play()
     
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
       for (const [k, i] of Object.entries(parsedData)) {
         if (k === "transcript") {
-          transcript.value = i;
+          try{
+          transcript.value = JSON.stringify(i.text);
+        }
+        catch(err){
+          transcript.value = JSON.stringify(i);
+        }
         }
       }
     }
   };
+
 
   audioComm.receiveLoop((data) => {
     // console.log("Received:", data);
@@ -227,16 +330,16 @@ const useRobotStore = defineStore("robot", () => {
    * @function streamAudioBuffer
    * @description - this loops through the audio buffers and plays them in order
    */
-  const streamAudioBuffer = setInterval(() => {
-    if (nextAudioBuffer) {
-      console.log("#NO NEXT BUFFER#")
-      const source = audioContext.createBufferSource();
-      source.buffer = nextAudioBuffer;
-      source.connect(audioContext.destination);
-      source.start();
-      nextAudioBuffer = null;
-    }
-  }, 1000);
+  // const streamAudioBuffer = setInterval(() => {
+  //   if (nextAudioBuffer) {
+  //     console.log("#NEXT BUFFER#", nextAudioBuffer)
+  //     const source = audioContext.createBufferSource();
+  //     source.buffer = nextAudioBuffer;
+  //     source.connect(audioContext.destination);
+  //     source.start();
+  //     // nextAudioBuffer = null;
+  //   }
+  // }, Math.floor(1000 / 16));
   
 
   /**
@@ -249,10 +352,21 @@ const useRobotStore = defineStore("robot", () => {
   const joystick = ref([0, 0]);
 
   // When the joystick is updated, send the new joystick data to the robot
-  watch(joystick, (newJoystick) => {
-    // console.log("Joystick updated:", newJoystick);
-    // The joystick x and y inputs are reversed for the virtual joystick versus the physical joystick, so we will need to flip the values
-    const sendJoystick = [newJoystick[1], -1 * newJoystick[0]];
+  // watch(joystick, (newJoystick) => {
+  //   // console.log("Joystick updated:", newJoystick);
+  //   // The joystick x and y inputs are reversed for the virtual joystick versus the physical joystick, so we will need to flip the values
+  //   const sendJoystick = [newJoystick[1], -1 * newJoystick[0]];
+  //   const data = JSON.stringify({ controls: sendJoystick });
+  //   // console.log("Sending data AAAAA:", data);
+  //   const bufferData = Buffer.from(data, "utf-8");
+  //   // console.log("Returning the data to string AAAAA:", bufferData.toString());
+  //   const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
+  //   // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
+  //   camComm.sendS(concatData);
+  // });
+
+  const motorInterval = setInterval(() => {
+    const sendJoystick = [joystick.value[1], -1 * joystick.value[0]];
     const data = JSON.stringify({ controls: sendJoystick });
     // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
@@ -260,7 +374,7 @@ const useRobotStore = defineStore("robot", () => {
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
     // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
     camComm.sendS(concatData);
-  });
+  }, 50);
 
   /**
    * ---------------------
@@ -365,7 +479,7 @@ const useRobotStore = defineStore("robot", () => {
          */
 
         const HARV7_WHEEL_DIAMETER = 7; // inches
-        const HARV_7_MAX_RPM = 60; // RPM
+        const HARV_7_MAX_RPM = 40; // RPM
         const distanceNumber = payload.params && payload.params.distance ? parseFloat(payload.params.distance) : 10; // Unitless
         const unit = payload.params && payload.params.distanceUnit ? payload.params.distanceUnit : "feet"; // inches
         const direction = payload.params && payload.params.direction ? directionToSign(payload.params.direction) : directionToSign("forward"); // forward or backward
@@ -389,7 +503,7 @@ const useRobotStore = defineStore("robot", () => {
             toast.add({ severity: "success", summary: "Finished driving", detail: `Finished driving ${distanceNumber} ${unit}`, life: 1500 });
             useMotorOverride([0, 0]);
           }
-        }, 500);
+        }, 50);
       }
       if (payload.payload.passthrough) {
         // If passthrough is true, the robot will send the payload to the robot as-is
@@ -483,6 +597,7 @@ const useRobotStore = defineStore("robot", () => {
     shutdown,
     reboot,
     useHandlePayload,
+    SAMPLE_RATE
   };
 });
 
