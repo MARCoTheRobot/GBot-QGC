@@ -76,7 +76,7 @@ const lastAudioTime = ref(0);
 const SAMPLE_RATE = ref(16000);
 const CHUNK_SIZE = 3200;
 const NUM_CHANNELS = 1;
-const AUDIO_CONTEXT = new AudioContext();
+const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
 const connectionPassword = ref('HARV7');
 const myAudio = new Audio();
 console.log("MSGAAA: callAudio ", CallAudio);
@@ -85,12 +85,12 @@ console.log("MSGAAA: callAudio ", CallAudio);
 // const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
 const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
 
-// audioComm.initialize();
+audioComm.initialize();
 
-// audioComm.receiveLoop((data) => {
-//     // console.log("Received:", data);
-//     audioCommData(data);
-// });
+audioComm.receiveLoop((data) => {
+    // console.log("Received:", data);
+    audioCommData(data);
+});
 
 const newAudio = new Audio();
 newAudio.src = "data:audio/wav;base64,";
@@ -99,7 +99,7 @@ newAudio.src = "data:audio/wav;base64,";
 * @param data
 * @description - This function is called when data is received from the robot's Audio Communication
 */
-const audioCommDatasafe = (data) => {
+const audioCommDataOLD = (data) => {
     
     console.log("Received data eeffee:", data.toString('base64'));
     // const dataPrefix2 = data.slice(0, 1);
@@ -117,12 +117,18 @@ const audioCommDatasafe = (data) => {
         
             const nowBuffering = audioBuffer.getChannelData(0);
             for (let i = 0; i < data.length; i++) {
+                if(data[i] === 0 && data[i - 1] !== 0) {
+                    nowBuffering[i] = data[i-1] / 128.0 - 1.0;
+                    data[i] = data[i-1];
+                    
+                }
+                else{
                 nowBuffering[i] = (data[i] / 128.0 - 1) * 0.2; // Convert from 8-bit PCM to float
                 // nowBuffering[i] = data[i] - 1.0; // Convert from 8-bit PCM to float
                 // nowBuffering[i] = (data[i * 2] | (data[i * 2 + 1] << 8)) / 32768.0;
                 // Clamp values between -1 and 1 to prevent distortion
                 nowBuffering[i] = Math.max(-1, Math.min(nowBuffering[i], 1));
-                
+            }
             }
         console.log("MSG124: Playing nowBuffering eeffee", nowBuffering);
         const source = AUDIO_CONTEXT.createBufferSource();
@@ -134,11 +140,81 @@ const audioCommDatasafe = (data) => {
         // newAudio.src += base64String;
         // console.log("MSG12555: Playing newAudio eeffee", newAudio.src);
         // newAudio.play();
-    
+        const leBeouf = data;
+    const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("The data length is:", leBeouf.length);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+
+            for (let i = 0; i < leBeouf.length; i++) {
+                const x = i;
+                const y = canvas.height / 2 - leBeouf[i];
+                ctx.lineTo(x, y);
+            }
+
+            ctx.stroke();
 
 
     // } 
 };
+// Function to convert Uint8Array to Float32Array
+function convertUint8ToFloat32(uint8Array) {
+    const float32Array = new Float32Array(uint8Array.length / 4); // 4 bytes per Float32
+    const dataView = new DataView(uint8Array.buffer); // View the Uint8Array as a binary buffer
+
+    // Loop through each 4-byte chunk and interpret it as a Float32
+    for (let i = 0; i < float32Array.length; i++) {
+        float32Array[i] = dataView.getFloat32(i * 4, true); // true for little-endian byte order
+        // Amplify by 3
+        float32Array[i] *= 10;
+        // Cap it at -1 or 1
+        float32Array[i] = Math.max(-1, Math.min(float32Array[i], 1));
+    }
+
+    return float32Array;
+}
+
+const audioCommData = async (data) => {
+    // Convert the data to a base64 string
+    data = data.slice(1);
+    const uint8Data = new Uint8Array(data);
+    console.log("DEBUG: transforming data:", uint8Data);
+    const nowBuffering = convertUint8ToFloat32(uint8Data);
+    console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+    const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
+    // const nowBuffering = new Float32Array(data.length);
+    // for (let i = 0; i < data.length; i++) {
+    //     nowBuffering[i] = (data[i] / 128.0 - 1) * 0.4; // Convert from 8-bit PCM to float
+    // }
+    console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+    audioBuffer.copyToChannel(nowBuffering, 0); // Copy to the audio buffer
+        
+    const bufferSource = AUDIO_CONTEXT.createBufferSource();
+    bufferSource.buffer = audioBuffer;
+    bufferSource.connect(AUDIO_CONTEXT.destination); // Connect to speakers
+        
+    bufferSource.start();
+
+    const leBeouf = uint8Data;
+    const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("The data length is:", leBeouf.length);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+
+            for (let i = 0; i < leBeouf.length; i++) {
+                const x = i;
+                const y = canvas.height / 2 - leBeouf[i];
+                ctx.lineTo(x, y);
+            }
+
+            ctx.stroke();
+}
+
+
 const context = new AudioContext();
 const audioCommDataBOOOOOO = (arr) => {
     
@@ -239,7 +315,7 @@ console.log("The src is:", newAudio.src);
 newAudio.play();
 }
 
-const audioCommData = (data) => {
+const audioCommDataBackup = (data) => {
     const sampleRate = 16000 // samples per second
   const numChannels = 2 // mono or stereo
   const isFloat = false  // integer or floating point
@@ -261,7 +337,22 @@ const audioCommData = (data) => {
 const base64String = btoa(String.fromCharCode(...wavBytes));
 const dataURI = `data:audio/wav;base64,${base64String}`;
 myAudio.src = dataURI;
-    myAudio.play()
+    myAudio.play();
+    const leBeouf = new Uint8Array(data);
+    const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log("The data length is:", leBeouf.length);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+
+            for (let i = 0; i < leBeouf.length; i++) {
+                const x = i;
+                const y = canvas.height / 2 - leBeouf[i];
+                ctx.lineTo(x, y);
+            }
+
+            ctx.stroke();
 
 }
 

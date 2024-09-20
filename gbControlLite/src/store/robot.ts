@@ -122,10 +122,9 @@ const useRobotStore = defineStore("robot", () => {
             // this.state = i;
           }
         } else if (k === "transcript") {
-          try{
+          try {
             transcript.value = JSON.stringify(i.text) + " ";
-          }
-          catch(err){
+          } catch (err) {
             transcript.value = JSON.stringify(i);
           }
         }
@@ -156,11 +155,11 @@ const useRobotStore = defineStore("robot", () => {
    * EXTERNAL COMMUNICATION
    * ---------------------
    */
-  const camComm = new EComm(["harv7.harv-guardbot.org",8043], "v" + connectionPassword.value, false); // for live usage
+  const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
   // const camComm = new EComm(["10.204.56.41", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
-  // const audioComm = new EComm(["harv7.harv-guardbot.org",8044], "a" + connectionPassword.value, false);
+  // const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
+  const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
   camComm.receiveLoop((data) => {
@@ -168,158 +167,190 @@ const useRobotStore = defineStore("robot", () => {
     camCommData(data);
   });
 
+  const audioActive = ref(false);
   const lastAudioTime = ref(0);
   const SAMPLE_RATE = ref(16000);
   const CHUNK_SIZE = 3200;
   const NUM_CHANNELS = 1;
-  const AUDIO_CONTEXT = new AudioContext({sampleRate: SAMPLE_RATE.value});
-  // let audioPlaying = false;
-  const nextAudioBuffer: any = null;
+  const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
+
+  // console.log("MSGAAA: callAudio ", CallAudio);
+
+  // Function to convert Uint8Array to Float32Array
+  function convertUint8ToFloat32(uint8Array) {
+    const float32Array = new Float32Array(uint8Array.length / 4); // 4 bytes per Float32
+    const dataView = new DataView(uint8Array.buffer); // View the Uint8Array as a binary buffer
+
+    // Loop through each 4-byte chunk and interpret it as a Float32
+    for (let i = 0; i < float32Array.length; i++) {
+      float32Array[i] = dataView.getFloat32(i * 4, true); // true for little-endian byte order
+      // Amplify by 3
+      float32Array[i] *= 10;
+      // Cap it at -1 or 1
+      float32Array[i] = Math.max(-1, Math.min(float32Array[i], 1));
+    }
+
+    return float32Array;
+  }
+
+  let audioConnectedInterval = 0;
 
   /**
    * @function audioCommData
    * @param data
    * @description - This function is called when data is received from the robot's Audio Communication
    */
-  const audioCommDataSAFE = (data: any) => {
+  const audioCommData = async (data) => {
+    // Convert the data to a base64 string
+    const dataPrefix2 = data.slice(0, 1);
+    data = data.slice(1);
+    // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
+
+    if (dataPrefix2.equals(dataPrefix["audio"])) {
+      try {
+        clearInterval(audioConnectedInterval);
+      } catch (err) {
+        // Do nothing
+      }
+      console.log("MSG 123: Prefix is audio eeffee");
+      console.log("MSG 123: Received audio data eeffee", data);
+
+      const uint8Data = new Uint8Array(data);
+      console.log("DEBUG: transforming data:", uint8Data);
+      const nowBuffering = convertUint8ToFloat32(uint8Data);
+      console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+      const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
+      // const nowBuffering = new Float32Array(data.length);
+      // for (let i = 0; i < data.length; i++) {
+      //     nowBuffering[i] = (data[i] / 128.0 - 1) * 0.4; // Convert from 8-bit PCM to float
+      // }
+      console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+      audioBuffer.copyToChannel(nowBuffering, 0); // Copy to the audio buffer
+
+      const bufferSource = AUDIO_CONTEXT.createBufferSource();
+      bufferSource.buffer = audioBuffer;
+      bufferSource.connect(AUDIO_CONTEXT.destination); // Connect to speakers
+
+      bufferSource.start();
+
+      audioActive.value = true;
+      audioConnectedInterval = setInterval(() => {
+        audioActive.value = false;
+      }, 2000);
+
+    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
+      const parsedData = JSON.parse(data.toString());
+      for (const [k, i] of Object.entries(parsedData)) {
+        if (k === "transcript") {
+          try {
+            transcript.value = JSON.stringify(i.text);
+          } catch (err) {
+            transcript.value = JSON.stringify(i);
+          }
+        }
+      }
+    }
+  };
+
+  function buildWaveHeader(opts) {
+    const numFrames = opts.numFrames;
+    const numChannels = opts.numChannels || 2;
+    const sampleRate = opts.sampleRate || 44100;
+    const bytesPerSample = opts.bytesPerSample || 2;
+    const format = opts.format;
+
+    const blockAlign = numChannels * bytesPerSample;
+    const byteRate = sampleRate * blockAlign;
+    const dataSize = numFrames * blockAlign;
+
+    const buffer = new ArrayBuffer(44);
+    const dv = new DataView(buffer);
+
+    let p = 0;
+
+    function writeString(s) {
+      for (let i = 0; i < s.length; i++) {
+        dv.setUint8(p + i, s.charCodeAt(i));
+      }
+      p += s.length;
+    }
+
+    function writeUint32(d) {
+      dv.setUint32(p, d, true);
+      p += 4;
+    }
+
+    function writeUint16(d) {
+      dv.setUint16(p, d, true);
+      p += 2;
+    }
+
+    writeString("RIFF"); // ChunkID
+    writeUint32(dataSize + 36); // ChunkSize
+    writeString("WAVE"); // Format
+    writeString("fmt "); // Subchunk1ID
+    writeUint32(16); // Subchunk1Size
+    writeUint16(format); // AudioFormat
+    writeUint16(numChannels); // NumChannels
+    writeUint32(sampleRate); // SampleRate
+    writeUint32(byteRate); // ByteRate
+    writeUint16(blockAlign); // BlockAlign
+    writeUint16(bytesPerSample * 8); // BitsPerSample
+    writeString("data"); // Subchunk2ID
+    writeUint32(dataSize); // Subchunk2Size
+
+    return buffer;
+  }
+
+  const myAudio = new Audio();
+
+  const audioCommDataNEW = (data: any) => {
     // console.log("Received data eeffee:", data.toString());
     const dataPrefix2 = data.slice(0, 1);
     data = data.slice(1);
     // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
     if (dataPrefix2.equals(dataPrefix["audio"])) {
-      console.log("MSG 123: Prefix is audio eeffee")
+      console.log("MSG 123: Prefix is audio eeffee");
       console.log("MSG 123: Received audio data eeffee", data);
-      
-      const audioBuffer = AUDIO_CONTEXT.createBuffer(NUM_CHANNELS, data.length, AUDIO_CONTEXT.sampleRate);
-        for (let channel = 0; channel < NUM_CHANNELS; channel++) {
-            const nowBuffering = audioBuffer.getChannelData(channel);
-            for (let i = 0; i < data.length; i++) {
-                // nowBuffering[i] = (data[i * 2] | (data[i * 2 + 1] << 8)) / 32768.0; // Convert from 16-bit PCM to float
-                nowBuffering[i] = data[i] / 128.0 - 1.0; // Convert from 16-bit PCM to float 
-            }
-        }
-        const source = AUDIO_CONTEXT.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(AUDIO_CONTEXT.destination);
-        source.start();
-    
+
+      const sampleRate = 16000; // samples per second
+      const numChannels = 1; // mono or stereo
+      const isFloat = false; // integer or floating point
+      const [type, format] = isFloat ? [Float32Array, 3] : [Uint8Array, 1];
+
+      const wavHeader = new Uint8Array(
+        buildWaveHeader({
+          numFrames: data.byteLength / type.BYTES_PER_ELEMENT,
+          bytesPerSample: type.BYTES_PER_ELEMENT,
+          sampleRate,
+          numChannels,
+          format,
+        })
+      );
+
+      console.log("The wavHeader is:", wavHeader);
+      // create WAV file with header and downloaded PCM audio
+      const wavBytes = new Uint8Array(wavHeader.length + data.byteLength);
+      wavBytes.set(wavHeader, 0);
+      wavBytes.set(data, wavHeader.length);
+      const base64String = btoa(String.fromCharCode(...wavBytes));
+      const dataURI = `data:audio/wav;base64,${base64String}`;
+      myAudio.src = dataURI;
+      myAudio.play();
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
       for (const [k, i] of Object.entries(parsedData)) {
         if (k === "transcript") {
-          try{
-          transcript.value = JSON.stringify(i.text);
-        }
-        catch(err){
-          transcript.value = JSON.stringify(i);
-        }
-        }
-      }
-    }
-  };
-
-  
-function buildWaveHeader(opts) {
-  const numFrames =      opts.numFrames;
-  const numChannels =    opts.numChannels || 2;
-  const sampleRate =     opts.sampleRate || 44100;
-  const bytesPerSample = opts.bytesPerSample || 2;
-  const format =         opts.format
-
-  const blockAlign = numChannels * bytesPerSample;
-  const byteRate = sampleRate * blockAlign;
-  const dataSize = numFrames * blockAlign;
-
-  const buffer = new ArrayBuffer(44);
-  const dv = new DataView(buffer);
-
-  let p = 0;
-
-  function writeString(s) {
-    for (let i = 0; i < s.length; i++) {
-      dv.setUint8(p + i, s.charCodeAt(i));
-    }
-    p += s.length;
-}
-
-  function writeUint32(d) {
-    dv.setUint32(p, d, true);
-    p += 4;
-  }
-
-  function writeUint16(d) {
-    dv.setUint16(p, d, true);
-    p += 2;
-  }
-
-  writeString('RIFF');              // ChunkID
-  writeUint32(dataSize + 36);       // ChunkSize
-  writeString('WAVE');              // Format
-  writeString('fmt ');              // Subchunk1ID
-  writeUint32(16);                  // Subchunk1Size
-  writeUint16(format);              // AudioFormat
-  writeUint16(numChannels);         // NumChannels
-  writeUint32(sampleRate);          // SampleRate
-  writeUint32(byteRate);            // ByteRate
-  writeUint16(blockAlign);          // BlockAlign
-  writeUint16(bytesPerSample * 8);  // BitsPerSample
-  writeString('data');              // Subchunk2ID
-  writeUint32(dataSize);            // Subchunk2Size
-
-  return buffer;
-}
-
-const myAudio = new Audio();
-
-  const audioCommData = (data: any) => {
-    // console.log("Received data eeffee:", data.toString());
-    const dataPrefix2 = data.slice(0, 1);
-    data = data.slice(1);
-    // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
-
-    if (dataPrefix2.equals(dataPrefix["audio"])) {
-      console.log("MSG 123: Prefix is audio eeffee")
-      console.log("MSG 123: Received audio data eeffee", data);
-      
-      const sampleRate = 16000 // samples per second
-  const numChannels = 1 // mono or stereo
-  const isFloat = false  // integer or floating point
-  const [type, format] = isFloat ? [Float32Array, 3] : [Uint8Array, 1];
-  
-  const wavHeader = new Uint8Array(buildWaveHeader({
-    numFrames: data.byteLength / type.BYTES_PER_ELEMENT,
-    bytesPerSample: type.BYTES_PER_ELEMENT,
-    sampleRate,
-    numChannels,
-    format
-  }));
-
-  console.log("The wavHeader is:", wavHeader);
-  // create WAV file with header and downloaded PCM audio
-  const wavBytes = new Uint8Array(wavHeader.length + data.byteLength)
-  wavBytes.set(wavHeader, 0)
-  wavBytes.set(data, wavHeader.length)
-const base64String = btoa(String.fromCharCode(...wavBytes));
-const dataURI = `data:audio/wav;base64,${base64String}`;
-myAudio.src = dataURI;
-    myAudio.play()
-    
-    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
-      const parsedData = JSON.parse(data.toString());
-      for (const [k, i] of Object.entries(parsedData)) {
-        if (k === "transcript") {
-          try{
-          transcript.value = JSON.stringify(i.text);
-        }
-        catch(err){
-          transcript.value = JSON.stringify(i);
-        }
+          try {
+            transcript.value = JSON.stringify(i.text);
+          } catch (err) {
+            transcript.value = JSON.stringify(i);
+          }
         }
       }
     }
   };
-
 
   audioComm.receiveLoop((data) => {
     // console.log("Received:", data);
@@ -340,7 +371,6 @@ myAudio.src = dataURI;
   //     // nextAudioBuffer = null;
   //   }
   // }, Math.floor(1000 / 16));
-  
 
   /**
    * ---------------------
@@ -584,6 +614,7 @@ myAudio.src = dataURI;
     connectionPassword,
     joystick,
     videoActive,
+    audioActive,
     internalTemperature,
     cpuTemperature,
     m1Speed,
@@ -597,7 +628,7 @@ myAudio.src = dataURI;
     shutdown,
     reboot,
     useHandlePayload,
-    SAMPLE_RATE
+    SAMPLE_RATE,
   };
 });
 

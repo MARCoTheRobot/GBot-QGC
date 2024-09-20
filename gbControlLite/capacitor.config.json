@@ -13,7 +13,7 @@
       "iconColor": "#488AFF"
     }
   },
-  "server": {
+  "serverDEV": {
     "allowNavigation": [
       "app.marcohealthtech.com/*",
       "*.marcohealthtech.com",
@@ -24,12 +24,12 @@
       "https://commandconversation-kl3exemiua-uc.a.run.app/",
       "10.204.56.41"
     ],
-    "url": "http://10.204.56.41:8080",
+    "url": "http://10.204.56.43:8080",
     "cleartext": true,
     "androidScheme": "https",
     "iosScheme": "https"
   },
-  "serverPROD": {
+  "server": {
     "allowNavigation": [
       "app.marcohealthtech.com/*",
       "*.marcohealthtech.com",
@@ -39,7 +39,8 @@
       "capacitor://localhost",
       "https://api.mapbox.com",
       "api.mapbox.com",
-      "https://commandconversation-kl3exemiua-uc.a.run.app/"
+      "https://commandconversation-kl3exemiua-uc.a.run.app/",
+      "10.204.56.41"
     ],
     "hostname": "localhost",
     "iosScheme": "http",

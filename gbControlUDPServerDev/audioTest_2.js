@@ -53,7 +53,7 @@ const audioBuffer = fs.readFileSync(audioPath);
 console.log(audioBuffer);
 
 // Break the buffer into chunks of 12800 bytes
-const chunkSize = 65553;
+const chunkSize = 12800;
 const audioChunks = [];
 for (let i = 0; i < audioBuffer.length; i += chunkSize) {
   audioChunks.push(audioBuffer.slice(i, i + chunkSize));

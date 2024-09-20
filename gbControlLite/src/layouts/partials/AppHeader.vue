@@ -9,11 +9,11 @@
 
       <!--Audio on-->
       <IconVolume class="w-8 h-8" />
-      <span :class="`w-4 h-4 bg-red-500 rounded-full`" />
+      <span :class="`w-4 h-4 ${dotColor(robot.audioActive)} rounded-full`" />
 
       <!--Transcript active-->
       <IconTextCaption class="w-8 h-8" />
-      <span class="w-4 h-4 bg-red-500 rounded-full" />
+      <span :class="`w-4 h-4 ${dotColor(robot.audioActive)} rounded-full`" />
 
       <!--Motors active-->
       <IconScooterElectric class="w-8 h-8" />
