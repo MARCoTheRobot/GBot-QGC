@@ -31,7 +31,7 @@
 	<Joystick
 	id="joystick"
     :size="100"
-	class="fixed bottom-0 right-0"
+	class="fixed bottom-4 right-4"
     base-color="#9FA9B7"
     stick-color="linear-gradient(135deg, #515E70 100%, #59687C 0%)"
     :throttle="100"
@@ -48,7 +48,7 @@ import { useRouter } from "vue-router";
 import useSettingsStore from "@/store/settings";
 const settings = useSettingsStore();
 import Video3D from "@/assets/icons/dock/video-3d.png";
-import Audio3D from "@/assets/icons/dock/audio-3d.png";
+import Audio3D from "@/assets/icons/dock/speak-3d.png";
 import Settings3D from "@/assets/icons/dock/settings-3d.png";
 import Chat3D from "@/assets/icons/dock/chat-3d.png";
 import ConfirmPopup from "primevue/confirmpopup";
@@ -69,6 +69,7 @@ const joystickStartEvent = () => {
 }
 const joystickStopEvent = () => {
 	console.log('stop')
+	robot.joystick = [0,0];
 }
 const joystickMoveEvent = ({x, y, direction, distance}) => {
 	console.log(x, y, direction, distance);
@@ -93,10 +94,11 @@ const dockItems = ref<any>([
 				target: event.target,
 				group: "recording",
 				position: "top",
-				message: "Start recording video?",
+				message: robot.isRecordingVideo ? "Stop recording video?":"Start recording video?",
 				icon: "pi pi-exclamation-triangle",
 				accept: () => {
 					// Start recording video
+					robot.isRecordingVideo = !robot.isRecordingVideo;
 					toast.add({ severity: "success", summary: "Recording started", life: 3000 });
 				},
 				reject: () => {
@@ -111,7 +113,7 @@ const dockItems = ref<any>([
 		label: "Transcript",
 		action: (event: any) =>{
 			settings.transcript.show = !settings.transcript.show;
-			settings.transcript.messages = [];
+			// settings.transcript.messages = [];
 
 			const nextMessages = [ 
 			{
@@ -174,13 +176,24 @@ const menuItems = [
 		icon: "pi pi-sliders-v",
 		command: () => {
 			robot.state = robot.states['manual'];
+			toast.add({severity:'info', summary:'Set to Manual Control', life:3000});
+		},
+	},
+	{
+		label: "Follow Me",
+		icon: "pi pi-eye",
+		command: () => {
+			robot.state = robot.states['yolo'];
+			toast.add({severity:'info', summary:'Set to Follow Me', life:3000});
 		},
 	},
 	{
 		label: "Audio",
-		icon: "pi pi-volume",
+		icon: "pi pi-volume-up",
 		command: () => {
 			robot.state = robot.states['audio'];
+			toast.add({severity:'info', summary:'Set to Audio Only', life:3000});
+
 		},
 	},
 	{

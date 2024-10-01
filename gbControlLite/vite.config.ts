@@ -16,5 +16,8 @@ export default defineConfig({
     host: true,
     port: 8080,
   },
+  optimizeDeps: {
+    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+  },
   envPrefix: ["APP_", "VUE_APP_"],
 });

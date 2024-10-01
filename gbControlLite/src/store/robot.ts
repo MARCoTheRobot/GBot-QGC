@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { startingImage } from "@/data/videoLoading";
 
 import { EComm } from "@/utils/externalComm";
+import { VideoRecorder } from "@/utils/videoRecord";
 
 import { useRoute, useRouter } from "vue-router";
 
@@ -31,18 +32,18 @@ const useRobotStore = defineStore("robot", () => {
     audio: Buffer.from("\x03"),
   };
 
-  const states = {
+  const states = ref({
     manual: 0,
     yolo: 1,
     audio: 2,
-  };
+  });
 
   const state = ref(0);
   let stateSendInterval = setInterval(() => {
     if (typeof state.value === "number" && state.value > -1) {
       camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
     }
-  }, 500);
+  }, 250);
 
   /**
    * ---------------------
@@ -58,9 +59,15 @@ const useRobotStore = defineStore("robot", () => {
   const setState = (newState: any) => {
     state.value = newState;
     if (state.value && state.value > -1) {
+      try {
+        clearInterval(stateSendInterval);
+      } catch (e) {
+        console.log(e);
+      }
+
       stateSendInterval = setInterval(() => {
         camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }), "utf-8")]));
-      }, 500);
+      }, 250);
     } else {
       try {
         clearInterval(stateSendInterval);
@@ -83,10 +90,12 @@ const useRobotStore = defineStore("robot", () => {
   const m2Speed = ref<number>(0);
   const robotRoll = ref<number>(0);
   const transcript = ref<string>("");
+  const transientTranscript = ref<string>("");
   const lastVideoTime = ref<any>(0);
   const MAX_VIDEO_TIMEOUT = 2;
   const videoBuffer = ref<any>(startingImage);
-
+  const isRecordingVideo = ref<boolean>(false);
+  const vidRecorder = new VideoRecorder();
   /**
    * @function camCommData
    * @param data
@@ -101,6 +110,10 @@ const useRobotStore = defineStore("robot", () => {
       // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
       // console.log("Received video data");
       videoBuffer.value = data;
+      if(isRecordingVideo.value) {
+        vidRecorder.addFrame(data);
+        console.log("VIDCHANGE 2 - ADDED FRAME");
+      }
       lastVideoTime.value = Date.now();
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
@@ -122,15 +135,35 @@ const useRobotStore = defineStore("robot", () => {
             // this.state = i;
           }
         } else if (k === "transcript") {
-          try {
-            transcript.value = JSON.stringify(i.text) + " ";
-          } catch (err) {
-            transcript.value = JSON.stringify(i);
+          const parsedTranscript = i;
+          if (parsedTranscript["message_type"] === "FinalTranscript") {
+            try {
+              transcript.value = i.text + " ";
+              transientTranscript.value = "";
+            } catch (err) {
+              transcript.value = JSON.stringify(i);
+              transientTranscript.value = "";
+            }
+          } else {
+            try {
+              transientTranscript.value = i.text + " ";
+            } catch (err) {
+              transientTranscript.value = JSON.stringify(i);
+            }
           }
         }
       }
     }
   };
+
+  watch(isRecordingVideo, (newIsRecordingVideo, oldIsRecordingVideo) => {
+    console.log("VIDCHANGE 1:", newIsRecordingVideo, oldIsRecordingVideo);
+    // If the video recording has stopped, save the video
+    if(!newIsRecordingVideo && oldIsRecordingVideo) {
+      console.log("VIDCHANGE 3 - SAVING VIDEO CALL");
+      vidRecorder.saveVideo();
+    }
+  });
 
   const videoActive = ref(false);
   const videoActiveTimeout = ref<any>(0);
@@ -156,7 +189,7 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
   const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["10.204.56.41", 8043], "v" + connectionPassword.value, false); // for testing
+  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
   // const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
   const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
@@ -237,15 +270,23 @@ const useRobotStore = defineStore("robot", () => {
       audioConnectedInterval = setInterval(() => {
         audioActive.value = false;
       }, 2000);
-
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
       for (const [k, i] of Object.entries(parsedData)) {
         if (k === "transcript") {
-          try {
-            transcript.value = JSON.stringify(i.text);
-          } catch (err) {
-            transcript.value = JSON.stringify(i);
+          const parsedTranscript = i;
+          if (parsedTranscript["message_type"] === "FinalTranscript") {
+            try {
+              transcript.value = i.text + " ";
+            } catch (err) {
+              transcript.value = JSON.stringify(i);
+            }
+          } else {
+            try {
+              transientTranscript.value = i.text + " ";
+            } catch (err) {
+              transientTranscript.value = JSON.stringify(i);
+            }
           }
         }
       }
@@ -304,53 +345,62 @@ const useRobotStore = defineStore("robot", () => {
 
   const myAudio = new Audio();
 
-  const audioCommDataNEW = (data: any) => {
-    // console.log("Received data eeffee:", data.toString());
-    const dataPrefix2 = data.slice(0, 1);
-    data = data.slice(1);
-    // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
+  // const audioCommDataNEW = (data: any) => {
+  //   // console.log("Received data eeffee:", data.toString());
+  //   const dataPrefix2 = data.slice(0, 1);
+  //   data = data.slice(1);
+  //   // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
-    if (dataPrefix2.equals(dataPrefix["audio"])) {
-      console.log("MSG 123: Prefix is audio eeffee");
-      console.log("MSG 123: Received audio data eeffee", data);
+  //   if (dataPrefix2.equals(dataPrefix["audio"])) {
+  //     console.log("MSG 123: Prefix is audio eeffee");
+  //     console.log("MSG 123: Received audio data eeffee", data);
 
-      const sampleRate = 16000; // samples per second
-      const numChannels = 1; // mono or stereo
-      const isFloat = false; // integer or floating point
-      const [type, format] = isFloat ? [Float32Array, 3] : [Uint8Array, 1];
+  //     const sampleRate = 16000; // samples per second
+  //     const numChannels = 1; // mono or stereo
+  //     const isFloat = false; // integer or floating point
+  //     const [type, format] = isFloat ? [Float32Array, 3] : [Uint8Array, 1];
 
-      const wavHeader = new Uint8Array(
-        buildWaveHeader({
-          numFrames: data.byteLength / type.BYTES_PER_ELEMENT,
-          bytesPerSample: type.BYTES_PER_ELEMENT,
-          sampleRate,
-          numChannels,
-          format,
-        })
-      );
+  //     const wavHeader = new Uint8Array(
+  //       buildWaveHeader({
+  //         numFrames: data.byteLength / type.BYTES_PER_ELEMENT,
+  //         bytesPerSample: type.BYTES_PER_ELEMENT,
+  //         sampleRate,
+  //         numChannels,
+  //         format,
+  //       })
+  //     );
 
-      console.log("The wavHeader is:", wavHeader);
-      // create WAV file with header and downloaded PCM audio
-      const wavBytes = new Uint8Array(wavHeader.length + data.byteLength);
-      wavBytes.set(wavHeader, 0);
-      wavBytes.set(data, wavHeader.length);
-      const base64String = btoa(String.fromCharCode(...wavBytes));
-      const dataURI = `data:audio/wav;base64,${base64String}`;
-      myAudio.src = dataURI;
-      myAudio.play();
-    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
-      const parsedData = JSON.parse(data.toString());
-      for (const [k, i] of Object.entries(parsedData)) {
-        if (k === "transcript") {
-          try {
-            transcript.value = JSON.stringify(i.text);
-          } catch (err) {
-            transcript.value = JSON.stringify(i);
-          }
-        }
-      }
-    }
-  };
+  //     console.log("The wavHeader is:", wavHeader);
+  //     // create WAV file with header and downloaded PCM audio
+  //     const wavBytes = new Uint8Array(wavHeader.length + data.byteLength);
+  //     wavBytes.set(wavHeader, 0);
+  //     wavBytes.set(data, wavHeader.length);
+  //     const base64String = btoa(String.fromCharCode(...wavBytes));
+  //     const dataURI = `data:audio/wav;base64,${base64String}`;
+  //     myAudio.src = dataURI;
+  //     myAudio.play();
+  //   } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
+  //     const parsedData = JSON.parse(data.toString());
+  //     for (const [k, i] of Object.entries(parsedData)) {
+  //       if (k === "transcript") {
+  //         const parsedTranscript = i;
+  //         if (parsedTranscript["message_type"] === "FinalTranscript") {
+  //           try {
+  //             transcript.value = i.text + " ";
+  //           } catch (err) {
+  //             transcript.value = JSON.stringify(i);
+  //           }
+  //         } else {
+  //           try {
+  //             transientTranscript.value = i.text + " ";
+  //           } catch (err) {
+  //             transientTranscript.value = JSON.stringify(i);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // };
 
   audioComm.receiveLoop((data) => {
     // console.log("Received:", data);
@@ -396,9 +446,9 @@ const useRobotStore = defineStore("robot", () => {
   // });
 
   const motorInterval = setInterval(() => {
-    const sendJoystick = [joystick.value[1], -1 * joystick.value[0]];
+    const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value , -1 * joystick.value[0] * motorTurnSensitivity.value];
     const data = JSON.stringify({ controls: sendJoystick });
-    // console.log("Sending data AAAAA:", data);
+    console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
     // console.log("Returning the data to string AAAAA:", bufferData.toString());
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
@@ -416,6 +466,8 @@ const useRobotStore = defineStore("robot", () => {
   const lastMotorSpeedTime = ref(0);
   const motorSpeeds = ref([0, 0]);
   const MAX_MOTOR_TIMEOUT = 2;
+  const motorDriveSensitivity = ref(1);
+  const motorTurnSensitivity = ref(1);
 
   /**
    * @computed motorsActive
@@ -501,7 +553,7 @@ const useRobotStore = defineStore("robot", () => {
         // If forceDrive is true, the robot will drive regardless of the current state
         // This is used to override the current state of the robot
         // The robot will drive with the joystick
-        setState(states.manual);
+        setState(states.value.manual);
 
         /**
          * Now, we need to calculate the drive values for the robot,
@@ -609,6 +661,8 @@ const useRobotStore = defineStore("robot", () => {
 
   // Return all public variables and functions
   return {
+    states,
+    state,
     camComm,
     audioComm,
     connectionPassword,
@@ -621,8 +675,12 @@ const useRobotStore = defineStore("robot", () => {
     m2Speed,
     robotRoll,
     transcript,
+    transientTranscript,
     videoBuffer,
+    isRecordingVideo,
     motorSpeeds,
+    motorDriveSensitivity,
+    motorTurnSensitivity,
     motorSpeedData,
     motorsActive,
     shutdown,

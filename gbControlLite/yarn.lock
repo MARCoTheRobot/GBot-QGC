@@ -1077,6 +1077,11 @@
   resolved "https://registry.yarnpkg.com/@capacitor/device/-/device-4.1.0.tgz#b9f73368f6f6f1194181bcd7bc4b8a021c67f33e"
   integrity sha512-BlcYb6e6m+vC1SxeyUDIUGfuNXdKEcpFPDCs/kxk2SByFc/BkvXeoy4NjY4qmTderGELofX9bta5Iy9JV7rGUg==
 
+"@capacitor/filesystem@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/filesystem/-/filesystem-6.0.1.tgz#2c8aa67217c628ee3237555148b021e69df7b198"
+  integrity sha512-eHhXm6tzBIQhErzFnfOE6eA1U+15DHc2212/COfzzGGRk/dyGympoVV3ct2YPVzvpTSxMEW3xFocORv/xD9gFg==
+
 "@capacitor/preferences@^6.0.2":
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/@capacitor/preferences/-/preferences-6.0.2.tgz#9b69931b64535af6e5f36971ca0278b1ac5bec9e"
@@ -1318,6 +1323,23 @@
   version "8.57.0"
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.57.0.tgz#a5417ae8427873f1dd08b70b3574b453e67b5f7f"
   integrity sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==
+
+"@ffmpeg/ffmpeg@^0.12.10":
+  version "0.12.10"
+  resolved "https://registry.yarnpkg.com/@ffmpeg/ffmpeg/-/ffmpeg-0.12.10.tgz#e3cce21f21f11f33dfc1ec1d5ad5694f4a3073c9"
+  integrity sha512-lVtk8PW8e+NUzGZhPTWj2P1J4/NyuCrbDD3O9IGpSeLYtUZKBqZO8CNj1WYGghep/MXoM8e1qVY1GztTkf8YYQ==
+  dependencies:
+    "@ffmpeg/types" "^0.12.2"
+
+"@ffmpeg/types@^0.12.2":
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/@ffmpeg/types/-/types-0.12.2.tgz#bc7eef321ae50225c247091f1f23fd3087c6aa1d"
+  integrity sha512-NJtxwPoLb60/z1Klv0ueshguWQ/7mNm106qdHkB4HL49LXszjhjCCiL+ldHJGQ9ai2Igx0s4F24ghigy//ERdA==
+
+"@ffmpeg/util@^0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@ffmpeg/util/-/util-0.12.1.tgz#98afa20d7b4c0821eebdb205ddcfa5d07b0a4f53"
+  integrity sha512-10jjfAKWaDyb8+nAkijcsi9wgz/y26LOc1NKJradNMyCIl6usQcBbhkjX5qhALrSBcOy6TOeksunTYa+a03qNQ==
 
 "@firebase/analytics-compat@0.2.13":
   version "0.2.13"

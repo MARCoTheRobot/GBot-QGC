@@ -67,7 +67,7 @@ import useRobotStore from "@/store/robot";
 
 const robot = useRobotStore();
 
-const { transcript } = storeToRefs(robot);
+const { transcript, transientTranscript } = storeToRefs(robot);
 
 const nextMessage = ref("");
 
@@ -90,17 +90,17 @@ const messageClass = (message: any) => {
 
 
 /**
- * Watch the transcript object for changes -
+ * Watch the transient transcript object for changes -
  * If the transcript changes and the most recent message is of type liveTranscription,
  * then add the message to the last message in the transcript
  * Otherwise, create a new message in the transcript with the liveTranscription message
  */
-watch(transcript, (value) =>{
+watch(transientTranscript, (value) =>{
     console.log("transcript", value);
     if(settings.transcript.messages.length > 0 ){
     const lastMessage = settings.transcript.messages[settings.transcript.messages.length - 1];
     if(lastMessage.type === "liveTranscription"){
-        settings.transcript.messages[settings.transcript.messages.length - 1].text += value;
+        settings.transcript.messages[settings.transcript.messages.length - 1].text = value;
     }
     else{
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "liveTranscription", text: value });
@@ -108,6 +108,26 @@ watch(transcript, (value) =>{
 }
 else{
     settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "liveTranscription", text: value });
+}   
+});
+
+/**
+ * Once a transcript is finalized, push a new final message to the transcript box
+ */
+watch(transcript, (value) => {
+    console.log("transcript", value);
+    if(settings.transcript.messages.length > 0 ){
+    const lastMessage = settings.transcript.messages[settings.transcript.messages.length - 1];
+    if(lastMessage.type === "liveTranscription"){
+        settings.transcript.messages[settings.transcript.messages.length - 1].text = value;
+        settings.transcript.messages[settings.transcript.messages.length - 1].type = "status";
+    }
+    else{
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: value });
+    }
+}
+else{
+    settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: value });
 }   
 });
 

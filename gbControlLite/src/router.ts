@@ -9,6 +9,7 @@ import RootLayout from "@/layouts/RootLayout.vue";
 import TestView from "@/pages/TestView.vue";
 import TestAudioView from "@/pages/TestAudioView.vue";
 import TestAudio2 from "@/pages/TestAudio2.vue";
+import SettingsView from "@/pages/settings/SettingsView.vue";
 // import MapStudio from "./pages/MapStudio.vue";
 
 // const routes: RouteRecordRaw[] = [
@@ -127,6 +128,11 @@ const routes: RouteRecordRaw[] = [
         path: "/map",
         name: "map",
         component: () => import("@/pages/MapView.vue"),
+      },
+      {
+        path: "/settings",
+        name: "settings",
+        component: SettingsView,
       }
     ],
   },
