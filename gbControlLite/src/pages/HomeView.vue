@@ -2,7 +2,8 @@
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		<!--Video display-->
 		<div class="fixed top-0 right-0 w-[78.333%] h-screen overflow-hidden z-0">
-			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}`" alt="PrimeVue logo" class="w-screen h-screen" />
+		<canvas id="videoCanvas" class="w-screen h-screen" />
+			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}`" alt="PrimeVue logo" class="hidden w-screen h-screen" id="img2"/>
 
 		</div>
 		
@@ -59,10 +60,28 @@ import Image from "primevue/image";
 // import TranscriptDialog from "@/components/TranscriptDialog.vue";
 import Joystick from 'vue-joystick-component'
 import Menu from "primevue/menu";
+import { storeToRefs } from "pinia";
 
 import useRobotStore from "@/store/robot";
+import { doc } from "firebase/firestore";
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 const robot = useRobotStore();
+
+const { videoBuffer } = storeToRefs(robot);
+
+watch(videoBuffer, (newVal) => {
+	const canvas = document.getElementById('videoCanvas') as HTMLCanvasElement;
+	const ctx = canvas.getContext('2d');
+	const img = document.getElementById('img2') as HTMLImageElement;
+	img.onload = () => {
+		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+		requestAnimationFrame(() => {
+			img.src = `data:image/jpeg;base64,${newVal}`;
+		})
+	}
+	// img.src = `data:image/jpeg;base64,${newVal}`;
+})
 
 const joystickStartEvent = () => {
 	console.log('start')
@@ -78,7 +97,7 @@ const joystickMoveEvent = ({x, y, direction, distance}) => {
 }
 const confirm = useConfirm();
 // import MarcoAvatar from '@/components/marco-avatar.vue';
-import { storeToRefs } from "pinia";
+// import { storeToRefs } from "pinia";
 const toast = useToast();
 const router = useRouter();
 
@@ -99,7 +118,13 @@ const dockItems = ref<any>([
 				accept: () => {
 					// Start recording video
 					robot.isRecordingVideo = !robot.isRecordingVideo;
-					toast.add({ severity: "success", summary: "Recording started", life: 3000 });
+					if(robot.isRecordingVideo){
+						startRecording(document.getElementById('videoCanvas') as HTMLCanvasElement);
+					}
+					else{
+						stopRecording();
+					}
+					toast.add({ severity: "success", summary: `${robot.isRecordingVideo ? 'Started recording':'Stopped Recording'}`, life: 3000 });
 				},
 				reject: () => {
 					// Cancel recording video
@@ -160,6 +185,9 @@ const dockItems = ref<any>([
 	{
 		icon: Audio3D,
 		label: "Record Audio",
+		action: () =>{
+			startStopMicrophone();
+		}
 	},
 	{
 		icon: Settings3D,
@@ -217,6 +245,127 @@ const menuItems = [
 
 const transcriptVisible = ref<boolean>(false);
 
+
+let mediaRecorder: MediaRecorder | null = null;
+const recordedChunks: Blob[] = [];
+
+const startRecording = (canvas: HTMLCanvasElement) => {
+	console.log("VIDCHANGE ABC: START RECORDING");
+  const stream = canvas.captureStream(10); // 10 frames per second
+  mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+
+  mediaRecorder.ondataavailable = (event) => {
+ 
+		console.log("VIDCHANGE ABD: MADE IT TO THE EVENT");
+      recordedChunks.push(event.data);
+  
+  };
+
+  mediaRecorder.onstart = () => {
+      console.log("vidchange: MediaRecorder started");
+    };
+
+
+    mediaRecorder.onerror = (event) => {
+      console.error("vidchange: MediaRecorder error:", event);
+    };
+	
+  mediaRecorder.start(1100);
+
+};
+
+const stopRecording = () => {
+	console.log("VIDCHANGE XYZ: STOP RECORDING");
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+	console.log("VIDCHANGE XXX: STOP RECORDING");
+    mediaRecorder.onstop = async () => {
+		 console.log("VIDCHANGE: The recorded chunks are: ", recordedChunks);
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+	  console.log("VIDCHANGE Y2Y: STOP RECORDING, ", blob);
+    //   const url = URL.createObjectURL(blob);
+	  const data = await blobToBase64(blob);
+	  console.log("VIDCHANGE YYY: STOP RECORDING DATA IS, ", data);
+	  const vidDateFormatted = new Date().toISOString().replace(/:/g, '-');
+	// const videoElement = document.createElement('video');
+	// videoElement.controls = true
+	  Filesystem.writeFile({
+        path: `gb-recorded_video-${vidDateFormatted}.webm`,
+        data: data,
+        directory: Directory.Documents,
+        // encoding: Encoding.UTF8
+    }).then(() => {
+		toast.add({severity:'success', summary:'Video saved successfully', life:3000});
+        // console.log('Video saved successfully.');
+    }).catch((error) => {
+		toast.add({severity:'error', summary:'Error saving video', life:3000});
+        // console.error('Error saving video:', error);
+    });
+	  console.log("VIDCHANGE DDD: STOP RECORDING");
+    //   window.URL.revokeObjectURL(url);
+	  console.log("VIDCHANGE POOEP: STOP RECORDING");
+    };
+  }
+};
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
+const microphoneOn = ref(false);
+let audioRecorder: MediaRecorder | null = null;
+const startStopMicrophone = async () => {
+    let stream;
+    if (!microphoneOn.value) {
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+				toast.add({severity:'success', summary:'Microphone started', life:3000});
+            } else {
+                console.error('getUserMedia is not supported in this browser.');
+				toast.add({severity:'error', summary:'Microphone not supported', life:3000});
+                return;
+            }
+            audioRecorder = new MediaRecorder(stream);
+            audioRecorder.ondataavailable = (event) => {
+                console.log("The event is ", event);
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const arrayBuffer = reader.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    console.log("Uint8Array: ", uint8Array);
+					robot.sendMicData(uint8Array);
+                };
+                const dat = reader.readAsArrayBuffer(event.data);
+                console.log("The data is ", dat);
+                
+                // audioChunks.value.push(event.data);
+               
+            };
+            audioRecorder.start(1005);
+            microphoneOn.value = true;
+            console.log("Microphone started");
+        } catch (error) {
+            console.error('Error accessing microphone:', error);
+        }
+    } else {
+        audioRecorder.stop();
+        microphoneOn.value = false;
+        console.log("Microphone stopped");
+		toast.add({severity:'info', summary:'Microphone stopped', life:3000});
+        // const audioBlob = new Blob(audioChunks.value, { type: 'audio/wav' });
+        //         const audioUrl = URL.createObjectURL(audioBlob);
+        //         const audioPlayer = document.createElement('audio');
+        //         audioPlayer.controls = true;
+        //         audioPlayer.src = audioUrl;
+        //         document.body.appendChild(audioPlayer);
+    }
+};
 
 
 onMounted(() => {

@@ -110,10 +110,10 @@ const useRobotStore = defineStore("robot", () => {
       // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
       // console.log("Received video data");
       videoBuffer.value = data;
-      if(isRecordingVideo.value) {
-        vidRecorder.addFrame(data);
-        console.log("VIDCHANGE 2 - ADDED FRAME");
-      }
+      // if(isRecordingVideo.value) {
+      //   vidRecorder.addFrame(videoBuffer.value);
+      //   console.log("VIDCHANGE 2 - ADDED FRAME");
+      // }
       lastVideoTime.value = Date.now();
     } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
       const parsedData = JSON.parse(data.toString());
@@ -161,7 +161,7 @@ const useRobotStore = defineStore("robot", () => {
     // If the video recording has stopped, save the video
     if(!newIsRecordingVideo && oldIsRecordingVideo) {
       console.log("VIDCHANGE 3 - SAVING VIDEO CALL");
-      vidRecorder.saveVideo();
+      // vidRecorder.saveVideo();
     }
   });
 
@@ -189,7 +189,7 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
   const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
+  // const camComm = new EComm(["10.204.56.41", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
   // const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
   const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
@@ -292,6 +292,16 @@ const useRobotStore = defineStore("robot", () => {
       }
     }
   };
+
+  /**
+   * @function sendMicData
+   * @param data 
+   * @returns 
+   */
+  const sendMicData = async (data) => {
+    const buffer = Buffer.concat([dataPrefix["audio"], data]);
+    audioComm.sendS(buffer);
+  }
 
   function buildWaveHeader(opts) {
     const numFrames = opts.numFrames;
@@ -687,6 +697,7 @@ const useRobotStore = defineStore("robot", () => {
     reboot,
     useHandlePayload,
     SAMPLE_RATE,
+    sendMicData
   };
 });
 

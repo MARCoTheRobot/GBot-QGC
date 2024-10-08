@@ -24,6 +24,7 @@
             <InputText v-model="nextMessage" placeholder="Type your chat" />
             <Button label="Send" @click="getChunk" @keyup.enter="getChunk" />
         </div>
+        <Button label="Start/Stop Microphone" @click="startStopMicrophone" />
     </div>
 </template>
 
@@ -471,7 +472,37 @@ const getChunk = async () => {
     
 };
 
-
+const microphoneOn = ref(false);
+const startStopMicrophone = async () => {
+    if (!microphoneOn.value) {
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } else {
+                console.error('getUserMedia is not supported in this browser.');
+                return;
+            }
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = (event) => {
+                const audioChunks = [];
+                audioChunks.push(event.data);
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            };
+            mediaRecorder.start();
+            microphoneOn.value = true;
+            console.log("Microphone started");
+        } catch (error) {
+            console.error('Error accessing microphone:', error);
+        }
+    } else {
+        mediaRecorder.stop();
+        microphoneOn.value = false;
+        console.log("Microphone stopped");
+    }
+};
 // const chunkInterval = setInterval(() => {
 //     getChunk();
 // }, 250);
