@@ -22,10 +22,13 @@
 			"localhost",
 			"capacitor://localhost",
 			"https://commandconversation-kl3exemiua-uc.a.run.app/",
-			"10.204.56.41"
+			"10.204.56.41",
+			"192.168.1.208:8080",
+			"http://192.168.1.208:8080/",
+			"192.168.1.208"
 		],
 		"hostname": "localhost",
-		"url": "http://10.204.56.41:8080/",
+		"url": "http://192.168.1.208:8080/",
 		"cleartext": true,
 		"androidScheme": "https",
 		"iosScheme": "https"

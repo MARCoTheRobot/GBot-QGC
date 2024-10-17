@@ -8,6 +8,26 @@
 		<template #start>	
 			<Image :src="logoImg" alt="logo" />
 		</template>
+		<template #end>
+			<div class="flex flex-col items-center">
+				<!-- <Dropdown 
+					:options="robot.micFormatOptions" 
+					v-model="robot.micFormatSelector" 
+					optionLabel="label"
+					optionValue="value"
+					placeholder="Select Mic Format" 
+					class="w-full"
+				/>
+				<Dropdown 
+					:options="robot.micBufferOptions" 
+					v-model="robot.micBufferSelection" 
+					optionLabel="label"
+					optionValue="value"
+					placeholder="Select Mic Buffer" 
+					class="w-full"
+				/> -->
+			</div>
+			</template>
 	</Menu>
 	
 	<div class="flex-col w-5/6 bg-slate-900">
@@ -42,6 +62,10 @@ import Menu from "primevue/menu";
 import AppHeader from "@/layouts/partials/AppHeader.vue";
 import TranscriptDialog from "@/components/TranscriptDialog.vue";
 import { useRouter } from "vue-router";
+import Dropdown from "primevue/dropdown";
+import useRobotStore from "@/store/robot";
+const robot = useRobotStore();
+
 const router = useRouter();
 const toast = useToast();
 toast.add({ severity: "success", summary: "Success Message", detail: `${settings.user}` });

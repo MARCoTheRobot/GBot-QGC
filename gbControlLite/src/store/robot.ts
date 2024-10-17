@@ -189,9 +189,9 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
   const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["10.204.56.41", 8043], "v" + connectionPassword.value, false); // for testing
+  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  // const audioComm = new EComm(["10.204.56.41", 8044], "a" + connectionPassword.value, false);
+  // const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, true);
   const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
@@ -266,6 +266,11 @@ const useRobotStore = defineStore("robot", () => {
 
       bufferSource.start();
 
+      // Send the audio back to the robot
+      // console.warn("MICDATA:", data);
+      // console.warn("MICDATA Buffer:", Buffer.from(data));
+      // audioComm.sendS(Buffer.concat([dataPrefix["audio"], Buffer.from(data)]));
+
       audioActive.value = true;
       audioConnectedInterval = setInterval(() => {
         audioActive.value = false;
@@ -299,7 +304,9 @@ const useRobotStore = defineStore("robot", () => {
    * @returns 
    */
   const sendMicData = async (data) => {
-    const buffer = Buffer.concat([dataPrefix["audio"], data]);
+    // const nowBuffering = convertUint8ToFloat32(uint8Data);
+    console.warn("MICDATA Buffer:", Buffer.from(data));
+    const buffer = Buffer.concat([dataPrefix["audio"], Buffer.from(data)]);
     audioComm.sendS(buffer);
   }
 
@@ -354,7 +361,24 @@ const useRobotStore = defineStore("robot", () => {
   }
 
   const myAudio = new Audio();
-
+  const micFormatSelector = ref(0);
+  const micFormatOptions = [
+    { label: "Array Buffer", value: 0 },
+    { label: "Uint8Array", value: 1 },
+    { label: "Float32 Array", value: 2 },
+    { label: "Converted Float 32", value: 3 },
+    { label: "Converted Float 32 2", value: 4 },
+  ];
+  const micBufferSelection = ref(4096);
+  const micBufferOptions = [
+    { label: "256", value: 256 },
+    { label: "512", value: 512 },
+    { label: "1024", value: 1024 },
+    { label: "2048", value: 2048 },
+    { label: "4096", value: 4096 },
+    { label: "8192", value: 8192 },
+    { label: "16384", value: 16384 }
+  ]
   // const audioCommDataNEW = (data: any) => {
   //   // console.log("Received data eeffee:", data.toString());
   //   const dataPrefix2 = data.slice(0, 1);
@@ -697,7 +721,11 @@ const useRobotStore = defineStore("robot", () => {
     reboot,
     useHandlePayload,
     SAMPLE_RATE,
-    sendMicData
+    sendMicData,
+    micFormatOptions,
+    micFormatSelector,
+    micBufferOptions,
+    micBufferSelection
   };
 });
 
