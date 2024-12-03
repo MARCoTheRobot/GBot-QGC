@@ -183,6 +183,26 @@ const audioCommData = async (data) => {
     const uint8Data = new Uint8Array(data);
     console.log("DEBUG: transforming data:", uint8Data);
     const nowBuffering = convertUint8ToFloat32(uint8Data);
+
+    // Calculate the average value of the float32 array
+    let sum = 0;
+    for (let i = 0; i < nowBuffering.length; i++) {
+        sum += nowBuffering[i];
+    }
+    const avg = sum / nowBuffering.length;
+    console.log("DEBUG: Average value of nowBuffering:", avg);
+    // Shift the values so that the average is 0
+    for (let i = 0; i < nowBuffering.length; i++) {
+        nowBuffering[i] -= avg;
+    }
+
+    // Iterate over the float32 array. Sometimes the values clip at 1 or -1, so we need to cap them to their nearest neighbor
+    for (let i = 0; i < nowBuffering.length; i++) {
+        if(Math.abs(nowBuffering[i]) >= 1) {
+          nowBuffering[i] = 1 * 0.5 * Math.sign(nowBuffering[i]);
+        }
+      }
+      
     console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
     const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
     // const nowBuffering = new Float32Array(data.length);
@@ -198,7 +218,7 @@ const audioCommData = async (data) => {
         
     bufferSource.start();
 
-    const leBeouf = uint8Data;
+    const leBeouf = nowBuffering;
     const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -208,7 +228,7 @@ const audioCommData = async (data) => {
 
             for (let i = 0; i < leBeouf.length; i++) {
                 const x = i;
-                const y = canvas.height / 2 - leBeouf[i];
+                const y = canvas.height / 2 - (leBeouf[i] * 100) ^ 5;
                 ctx.lineTo(x, y);
             }
 

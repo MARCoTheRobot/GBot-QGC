@@ -2,7 +2,7 @@
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		<!--Video display-->
 		<div class="fixed top-0 right-0 w-[78.333%] h-screen overflow-hidden z-0">
-			<canvas id="videoCanvas" class="w-screen h-screen" />
+			<canvas id="videoCanvas" class="w-full h-full" />
 			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}`" alt="PrimeVue logo"
 				class="hidden w-screen h-screen" id="img2" />
 

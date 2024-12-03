@@ -18,6 +18,9 @@ import { EComm } from "@/utils/externalComm";
 import { VideoRecorder } from "@/utils/videoRecord";
 
 import { useRoute, useRouter } from "vue-router";
+import { buffer } from "stream/consumers";
+
+import silenceAudio from "@/assets/audio/silence.mp3";
 
 const useRobotStore = defineStore("robot", () => {
   // Globals
@@ -108,7 +111,7 @@ const useRobotStore = defineStore("robot", () => {
 
     if (dataPrefix2.equals(dataPrefix["video"])) {
       // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
-      // console.log("Received video data");
+      console.log("Received video data");
       videoBuffer.value = data;
       // if(isRecordingVideo.value) {
       //   vidRecorder.addFrame(videoBuffer.value);
@@ -189,9 +192,9 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
   const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
+  // const camComm = new EComm(["10.204.56.61", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  // const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, true);
+  // const audioComm = new EComm(["10.204.56.61", 8044], "a" + connectionPassword.value, true);
   const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
@@ -206,7 +209,7 @@ const useRobotStore = defineStore("robot", () => {
   const CHUNK_SIZE = 3200;
   const NUM_CHANNELS = 1;
   const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
-
+  let bufferSource = null;
   // console.log("MSGAAA: callAudio ", CallAudio);
 
   // Function to convert Uint8Array to Float32Array
@@ -227,6 +230,14 @@ const useRobotStore = defineStore("robot", () => {
   }
 
   let audioConnectedInterval = 0;
+  const silentAudio = new Audio();
+  silentAudio.src = silenceAudio;
+  silentAudio.play();
+  silentAudio.loop = true;
+  silentAudio.addEventListener("ended", () => {
+    console.log("Silent audio ended");
+    silentAudio.play();
+  });
 
   /**
    * @function audioCommData
@@ -240,6 +251,9 @@ const useRobotStore = defineStore("robot", () => {
     // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
     if (dataPrefix2.equals(dataPrefix["audio"])) {
+      const currTime = Date.now();
+      lastAudioTime.value = currTime;
+      
       try {
         clearInterval(audioConnectedInterval);
       } catch (err) {
@@ -251,20 +265,61 @@ const useRobotStore = defineStore("robot", () => {
       const uint8Data = new Uint8Array(data);
       console.log("DEBUG: transforming data:", uint8Data);
       const nowBuffering = convertUint8ToFloat32(uint8Data);
+
+      
+    // Calculate the average value of the float32 array
+    let sum = 0;
+    for (let i = 0; i < nowBuffering.length; i++) {
+        sum += nowBuffering[i];
+    }
+    const avg = sum / nowBuffering.length;
+    console.log("DEBUG: Average value of nowBuffering:", avg);
+    // Shift the values so that the average is 0
+    for (let i = 0; i < nowBuffering.length; i++) {
+        nowBuffering[i] -= avg;
+    }
+
+    // Iterate over the float32 array. Sometimes the values clip at 1 or -1, so we need to cap them to their nearest neighbor
+    for (let i = 0; i < nowBuffering.length; i++) {
+        if(Math.abs(nowBuffering[i]) >= 1) {
+          nowBuffering[i] = 1 * 0.5 * Math.sign(nowBuffering[i]);
+        }
+      }
+
+
       console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
       const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
       // const nowBuffering = new Float32Array(data.length);
       // for (let i = 0; i < data.length; i++) {
       //     nowBuffering[i] = (data[i] / 128.0 - 1) * 0.4; // Convert from 8-bit PCM to float
       // }
-      console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+      console.log("DEBUG: Playing nowBuffering eeffee2", nowBuffering);
       audioBuffer.copyToChannel(nowBuffering, 0); // Copy to the audio buffer
 
-      const bufferSource = AUDIO_CONTEXT.createBufferSource();
+      bufferSource = AUDIO_CONTEXT.createBufferSource();
       bufferSource.buffer = audioBuffer;
       bufferSource.connect(AUDIO_CONTEXT.destination); // Connect to speakers
-
+      // bufferSource.loop = true;
       bufferSource.start();
+      // bufferSource.onended = () => {
+        
+      //   setTimeout(() => {
+      //   console.log("ABAB: Audio ended");
+      //   if(lastAudioTime.value === currTime) {
+      //     console.log("ABAB: Audio ended and no new audio received");
+      //     // Replay the audio from the beginning
+      //     bufferSource = AUDIO_CONTEXT.createBufferSource();
+      //     bufferSource.buffer = audioBuffer;
+      //     bufferSource.connect(AUDIO_CONTEXT.destination); // Connect to speakers
+      //     bufferSource.start();
+
+      //   }
+      // }, 250);
+
+      // }
+      // bufferSource.addEventListener("ended", () => {
+      //   bufferSource.start();
+      // });
 
       // Send the audio back to the robot
       // console.warn("MICDATA:", data);
@@ -500,8 +555,8 @@ const useRobotStore = defineStore("robot", () => {
   const lastMotorSpeedTime = ref(0);
   const motorSpeeds = ref([0, 0]);
   const MAX_MOTOR_TIMEOUT = 2;
-  const motorDriveSensitivity = ref(1);
-  const motorTurnSensitivity = ref(1);
+  const motorDriveSensitivity = ref(0.5);
+  const motorTurnSensitivity = ref(0.3);
 
   /**
    * @computed motorsActive
@@ -595,8 +650,8 @@ const useRobotStore = defineStore("robot", () => {
          */
 
         const HARV7_WHEEL_DIAMETER = 7; // inches
-        const HARV_7_MAX_RPM = 40; // RPM
-        const distanceNumber = payload.params && payload.params.distance ? parseFloat(payload.params.distance) : 10; // Unitless
+        const HARV_7_MAX_RPM = 10; // RPM
+        const distanceNumber = payload.params && payload.params.distance ? parseFloat(payload.params.distance) : 100; // Unitless
         const unit = payload.params && payload.params.distanceUnit ? payload.params.distanceUnit : "feet"; // inches
         const direction = payload.params && payload.params.direction ? directionToSign(payload.params.direction) : directionToSign("forward"); // forward or backward
         toast.add({ severity: "info", summary: "Starting to drive", detail: `Driving ${distanceNumber} ${unit}`, life: 1500 });
@@ -609,17 +664,18 @@ const useRobotStore = defineStore("robot", () => {
         const timeRequired = rotationsRequired / HARV_7_MAX_RPM; // How long the robot needs to drive to go the distance - minutes
         const secondsRequired = timeRequired * 60; // How long the robot needs to drive to go the distance - seconds
         let currSeconds = 0;
+        const motorOverridePing = 50; // ms
 
         motorOverrideInterval = setInterval(() => {
           if (currSeconds < secondsRequired) {
             useMotorOverride([direction[0], direction[1]]);
-            currSeconds += 0.5;
+            currSeconds += motorOverridePing / 1000;
           } else {
             clearInterval(motorOverrideInterval);
             toast.add({ severity: "success", summary: "Finished driving", detail: `Finished driving ${distanceNumber} ${unit}`, life: 1500 });
             useMotorOverride([0, 0]);
           }
-        }, 50);
+        }, motorOverridePing);
       }
       if (payload.payload.passthrough) {
         // If passthrough is true, the robot will send the payload to the robot as-is
@@ -725,7 +781,8 @@ const useRobotStore = defineStore("robot", () => {
     micFormatOptions,
     micFormatSelector,
     micBufferOptions,
-    micBufferSelection
+    micBufferSelection,
+    useAudioCommand
   };
 });
 

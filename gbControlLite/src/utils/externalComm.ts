@@ -110,7 +110,6 @@ export class EComm {
                             this.latencyMillis = (Date.now() / 1000 - parseFloat(data.toString())) * 1000;
                         } catch (error) {
                             // could not convert float (data)
-
                         }
                     }
                 }

@@ -132,6 +132,28 @@ server.on('listening',function(){
   console.log('Server is IP4/IP6 : ' + family);
   console.log('Server accepts buffer size : ' + server.getRecvBufferSize());
   console.log('Server sends buffer size : ' + server.getSendBufferSize());
+
+  let appendVideoInterval = setInterval(() => {
+    videoFrame++;
+    const nextVideoFrame = String(videoFrame).padStart(3, '0');
+    const videoData = fs.readFileSync(`assets/ezgif-frame-${nextVideoFrame}.jpg`,{encoding: 'base64'});
+    // console.log('Video frame ', nextVideoFrame, ' is ', Buffer.from(videoData).length, ' bytes long');
+    const videoMessage = Buffer.concat([dataPrefix1['robot'],dataPrefix1['client'],Buffer.from('<vHARV7>'),dataPrefix1.data,dataPrefix2.video,Buffer.from(videoData)]);
+    // console.log('Sending video frame to client', videoMessage.toString('utf-8'), info.address, 8043);
+    server.send(videoMessage,8043,"harv7.harv-guardbot.org",function(error){
+      if(error){
+        client.close();
+      }else{
+        console.log('Data sent !!!');
+      }
+    });
+
+    if (videoFrame > 99) {
+      clearInterval(appendVideoInterval);
+      appendVideo = false;
+      videoFrame = 0;
+    }
+  }, 100);
 });
 
 //emits after the socket is closed using socket.close();

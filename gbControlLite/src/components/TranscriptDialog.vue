@@ -36,6 +36,7 @@
                 <InputText v-model="nextMessage" placeholder="Send a message" @keyup.enter="send" />
                 <Button icon="pi pi-send" severity="secondary" @click="send" />
                 <Button icon="pi pi-microphone" severity="secondary" @click="speechToText" />
+                <Button icon="pi pi-play-circle" severity="secondary" @click="playSpeech" />
             </InputGroup>
         </template>
 
@@ -205,6 +206,11 @@ SpeechRecognition.addListener("onResult", (result) => {
     console.log("result", result);
     speechResult.value = result.value;
 });
+
+const playSpeech = async () => {
+    robot.useAudioCommand(nextMessage.value);
+    nextMessage.value = "";
+}
 
 
 
