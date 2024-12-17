@@ -44,7 +44,7 @@ export class EComm {
     private _send(data: Buffer, address: [string, number]): number {
         // console.log("Sending data 123:", data);
         if (data.length > this.bufferSize || address.length === 0) {
-            console.log("Data too large or incorrect address");
+            console.warn("Data too large or incorrect address");
             return 0; // data too large, doesn't fit in packet
         }
         try {
@@ -57,7 +57,7 @@ export class EComm {
             UDP.send({socketId: this.sockID, address: address[0], port: address[1], buffer: bufferString});
         } catch (error) {
             if (error.code === 'EAI_AGAIN') {
-                console.log("incorrect address");
+                console.error("incorrect address");
             }
             return 0;
         }
@@ -77,7 +77,7 @@ export class EComm {
     }
 
     public receiveLoop(recvFunction: (data: Buffer) => void): void {
-        console.log("Starting receive loop");
+        // console.log("Starting receive loop");
         let lastConnectionCheckTime = 0;
         const connectionCheckInterval = 0.5;
         let lastAckTime = 0;
@@ -87,17 +87,17 @@ export class EComm {
             const data1 = Buffer.from(data.buffer, 'base64');
             const rinfo = {address: this.serverAddress[0], port: this.serverAddress[1]};
             if ((rinfo.address === this.serverAddress[0] && rinfo.port === this.serverAddress[1])) {
-                console.log("Made it to decode data");
+                // console.log("Made it to decode data");
                 const decodeData = data1.slice(0, this.connectId.length).toString();
-                console.log("Decoded data:", decodeData);
+                // console.log("Decoded data:", decodeData);
                 if (this.connectId.equals(data1.slice(decodeData.indexOf('<'), decodeData.indexOf('>') + 1)) || true) {
-                    console.log("Made it to step 2");
+                    // console.log("Made it to step 2");
 
                     let data2 = data1.slice(decodeData.indexOf('>') + 1);
                     const dataTarget = data2.slice(0, 1);
                     data2 = data2.slice(1);
 
-                    console.log("Data target:", dataTarget, "Data Prefix:", this.dataPrefix['data']);
+                    // console.log("Data target:", dataTarget, "Data Prefix:", this.dataPrefix['data']);
 
                     if (dataTarget.equals(this.dataPrefix['data'])) {
                         recvFunction(data2);
@@ -117,7 +117,7 @@ export class EComm {
         });
 
         UDP.addListener('receiveError', (error: any) => {
-            console.log("Error receiving data");
+            console.error("Error receiving data: ", error);
         });
 
         setInterval(() => {
@@ -133,10 +133,10 @@ export class EComm {
 
     public async initialize(): Promise<number> {
         this.sock = UDP.create({properties: {name: this.id, bufferSize:65536}});
-        console.log("The address port is:", this.serverAddress[1]);
+        // console.log("The address port is:", this.serverAddress[1]);
         await UDP.bind({socketId: this.sockID, port: this.serverAddress[1]});
         
-        console.log("Initializing");
+        // console.log("Initializing");
         return 1;
     }
 }

@@ -242,14 +242,30 @@ const transcriptVisible = ref<boolean>(false);
 let mediaRecorder: MediaRecorder | null = null;
 const recordedChunks: Blob[] = [];
 
-const startRecording = (canvas: HTMLCanvasElement) => {
+const startRecording = async (canvas: HTMLCanvasElement) => {
 	console.log("VIDCHANGE ABC: START RECORDING");
-	const stream = canvas.captureStream(10); // 10 frames per second
-	mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+	const videoStream = canvas.captureStream(10); // 10 frames per second
+	videoStream.addTrack(robot.audioStream.stream.getAudioTracks()[0]);
+
+	// Request access to the user's microphone
+	const audioStream = robot.audioStream;
+
+	console.log("VIDCHANGE ABC: VIDEO STREAM IS ", videoStream);
+	console.log("VIDCHANGE ABC: AUDIO STREAM IS ", audioStream);
+
+	// Combine the video and audio streams
+	const combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioStream.stream.getAudioTracks()]);
+	console.log("VIDCHANGE ABC: COMBINED STREAM IS ", combinedStream);
+	// const combinedStream = new MediaStream([...videoStream.getAudioTracks()]);
+
+	mediaRecorder = new MediaRecorder(videoStream, {
+		mimeType: 'video/webm; codecs=vp9,opus'
+	});
 
 	mediaRecorder.ondataavailable = (event) => {
 
 		console.log("VIDCHANGE ABD: MADE IT TO THE EVENT");
+		console.log("VIDCHANGE: The event is ", event);
 		recordedChunks.push(event.data);
 
 	};
@@ -281,7 +297,10 @@ const stopRecording = () => {
 			console.log("VIDCHANGE YYY: STOP RECORDING DATA IS, ", data);
 			const vidDateFormatted = new Date().toISOString().replace(/:/g, '-');
 			// const videoElement = document.createElement('video');
+			
 			// videoElement.controls = true
+
+			// TODO: UNCOMMENT ALL THIS BELOW TO SAVE THE VIDEO
 			Filesystem.writeFile({
 				path: `gb-recorded_video-${vidDateFormatted}.webm`,
 				data: data,

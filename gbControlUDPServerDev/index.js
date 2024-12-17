@@ -78,7 +78,10 @@ const jsonData = {
     "cpu_temperature": 20 + Math.random() * 90,
     "pitch":  lastPitch,
     "motor_speeds": lastMotorSpeeds,
-    "transcript": nextDummyText,
+    "transcript": {
+      message_type: dummyTextIndex === DUMMY_TEXT_ARRAY.length - 2 ? 'FinalTranscript':'InterimTranscript',
+      text: nextDummyText
+    },
 }
 const returnMessageBuffer = Buffer.concat([returnMessage,Buffer.from(JSON.stringify(jsonData))]) ;
 // console.log('Sending msg to client',returnMessageBuffer.toString('utf-8'), info.address, 8043);
@@ -114,7 +117,7 @@ if (!appendVideo) {
       appendVideo = false;
       videoFrame = 0;
     }
-  }, 100);
+  }, 240);
 }
 
 });
@@ -149,8 +152,8 @@ server.on('listening',function(){
     });
 
     if (videoFrame > 99) {
-      clearInterval(appendVideoInterval);
-      appendVideo = false;
+      // clearInterval(appendVideoInterval);
+      // appendVideo = false;
       videoFrame = 0;
     }
   }, 100);

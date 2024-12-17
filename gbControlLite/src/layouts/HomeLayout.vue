@@ -37,59 +37,7 @@
         </div>
       </transition>
 
-      <!--Reconnect to MARCo sidebar-->
-      <Sidebar v-model:visible="userStore.reconnectDialog" header="Can't find a MARCo" position="bottom">
-        <!--State = 0 - options for reconnecting or adding MARCo-->
-        <div v-if="reconnectMARCoState === 0" class="p-4">
-          <EmptyComponent :msg="t(`networkSetup.couldNotFind`)" />
-          <div class="flex flex-col w-full gap-2">
-            <Button :label="t(`networkSetup.connectToPrevious`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-search-plus" text @click="openSearchPreviousMARCo" />
-            <Button :label="t(`networkSetup.addNewMARCo`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-user-plus" text @click="reconnectMARCoState = 1" />
-            <Button :label="t(`util.troubleshoot`).toLocaleUpperCase()" class="w-full" icon="pi pi-wrench" severity="secondary" text />
-          </div>
-        </div>
-        <!--State = 1 - bluetooth network setup-->
-        <NetworkSetup v-if="reconnectMARCoState === 1" :open="reconnectMARCoState === 1" />
-
-        <!--State = 2 - Scan to see if previous docks exist in the realtime database-->
-        <div v-if="reconnectMARCoState === 2" class="p-4">
-          <EmptyComponent :msg="`Pending User Scan Results: ${userStore.userScanResultsPending}; Single User Scan Results: ${userStore.userScanResultsSingle}; Multiple User Scan Results: ${userStore.userScanResultsMultiple};`" />
-        </div>
-
-        <!--State = 3 - Multiple previous dock results were found, show how many and prompt the user-->
-        <div v-if="reconnectMARCoState === 3" class="p-4">
-          <EmptyComponent :msg="`There are ${userStore.webDockResults.length} previous connections found. It will take up to ${Math.ceil(userStore.webDockResults.length * 4 / 60) } minutes to check them.`" :action1="openCheckPreviousMARCos" :action1-label="t(`util.start`).toLocaleUpperCase()" />
-          <div class="flex flex-row justify-between w-full">
-            <Button :label="t(`util.start`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-search-plus" text @click="openCheckPreviousMARCos" />
-            <Button :label="t(`util.cancel`).toLocaleUpperCase()" class="w-full" icon="pi pi-wrench" severity="secondary" text />
-          </div>
-        </div>
-
-        <!--State = 4 - Scanning previously connected MARCo's-->
-        <div v-if="reconnectMARCoState === 4" class="p-4">
-          <EmptyComponent :msg="`Checking previous MARCos... Please make sure the one you want to connect to is powered on and connected to wifi.`" />
-          <ProgressBar :value="(userStore.liveDockCheck.index + 1) / (userStore.webDockResults.length)">{{ userStore.liveDockCheck.index + 1 }} /{{ userStore.webDockResults.length }}</ProgressBar>
-            <Panel header="Stats for Nerds" toggleable :collapsed="true" class="w-full">
-              <p>{{ userStore.liveDockCheck.message }} {{ userStore.pingMsg }}</p>
-            </Panel>
       
-        </div>
-
-        <!--State = 5 - Found a previously connected MARCo - proceed to refresh window-->
-        <div v-if="reconnectMARCoState === 5" class="p-4">
-          <EmptyComponent :msg="`Found a MARCo! This window will refresh shortly.`" :lottie="checkbox1" />
-        </div>
-
-        <!--State = 6 - Could not find a previously connected MARCo-->
-        <div v-if="reconnectMARCoState === 6" class="p-4">
-          <EmptyComponent :msg="`Could not find any previously connected MARCos...`" />
-          <div class="flex flex-row justify-between w-full">
-            <Button :label="t(`util.start`).toLocaleUpperCase()" class="w-full" severity="secondary" icon="pi pi-search-plus" text @click="reconnectMARCoState = 1" />
-            <Button :label="t(`util.cancel`).toLocaleUpperCase()" class="w-full" icon="pi pi-wrench" severity="secondary" text />
-          </div>
-        </div>
-
-      </Sidebar>
       
   
 
@@ -146,56 +94,6 @@ onBeforeMount(() => {
   console.log("RUNNING THE MOUNTING FUNCTION");
 });
 
-
-const reconnectMARCoState = ref<number>(5);
-
-
-const route = useRoute();
-console.log("THE ROUTE META IS: ", route.meta.showChatBar);
-
-
-const showChatBar = computed(() => {
-  return route.meta.showChatBar && userStore.initialized;
-});
-
-const {userScanResultsPending, userScanResultsSingle, userScanResultsMultiple} = storeToRefs(userStore);
-
-/**
- * @description - Watches the userScanResultsMultiple variable and moves to the completed state if multiple docks are found
- */
-watch(userScanResultsMultiple, (newVal, oldVal) =>{
-  if(newVal && !oldVal){
-    console.log("Multiple old docks found, moving to state 3");
-    reconnectMARCoState.value = 3;
-  }
-});
-
-/**
- * @description - Watches the userScanResultsSingle variable and moves to the completed state if a single dock is found
- */
-watch(userScanResultsSingle, (newVal, oldVal) =>{
-  if(newVal && !oldVal){
-    console.log("Single old dock found, moving to state 5");
-    reconnectMARCoState.value = 5;
-  }
-});
-
-/**@function openSearchPreviousMARCo
- * @description Moves to the state where the app is searching for previously connected MARCos and launches that function
- */ 
-const openSearchPreviousMARCo = () => {
-  reconnectMARCoState.value = 2;
-  userStore.queryFirebaseRealtimeDatabase();
-}
-
-/**
- * @function openCheckPreviousMARCos
- * @description Moves to the state where the app is checking previously connected MARCos and launches that function
- */
-const openCheckPreviousMARCos = () => {
-  reconnectMARCoState.value = 4;
-  userStore.checkForLiveDock();
-}
 
 
 

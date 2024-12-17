@@ -2,8 +2,11 @@
     <Dialog :visible="settings.transcript.show" :modal="false" :draggable="true" position="topleft" class="dark">
         <template #header>
             <div class="flex-row justify-between">
-                <h2>Transcript</h2>
+                <span>
+                <Dropdown v-model="mode" :options="modes" option-label="label" option-value="value" placeholder="Switch Transcript Mode"/>
                 <!-- <button @click="visible = false">Close</button> -->
+                 
+                </span>
             </div>
         </template>
 
@@ -13,26 +16,26 @@
 
         <div class="flex flex-col flex-grow gap-4 overflow-y-auto max-h-96">
             <div v-if="settings.transcript.messages.length === 0" class="text-center">
-                <Image :src="Transcript3D" alt="transcript" />
-                <p class="text-sm italic font-light">Send a first message to the robot!</p>
+                <Image :src="Transcript3D" alt="transcript" width="250" />
+                <p class="text-sm italic font-light">{{mode === 'chat' ? 'Send a first message to the robot!':'Waiting for first transcript message'}}</p>
             </div>
             <div v-else>
                 <div v-for="transcript in settings.transcript.messages"
                     :key="transcript.id" :class="`flex flex-row justify-${transcript.type === 'user' ? 'end' : 'start'} w-full`">
                     <div class="flex flex-col gap-1">
 
-                        <p v-if="transcript.type === 'status'" class="text-sm italic font-light rounded">Status update
+                        <p v-if="transcript.type === 'status' && mode === 'chat'" class="text-sm italic font-light rounded">Status update
                         </p>
-                        <p v-else-if="transcript.type === 'liveTranscription'"
+                        <p v-else-if="transcript.type === 'liveTranscription' && mode !== 'chat'"
                             class="text-sm italic font-light rounded">
                             Transcribing</p>
-                        <p :class="messageClass(transcript)">{{ transcript.text }}</p>
+                        <p v-if="showMessage(transcript.type)" :class="messageClass(transcript)">{{ transcript.text }}</p>
                     </div>
                 </div>
             </div>
         </div>
         <template #footer>
-            <InputGroup>
+            <InputGroup v-if="mode === 'chat'">
                 <InputText v-model="nextMessage" placeholder="Send a message" @keyup.enter="send" />
                 <Button icon="pi pi-send" severity="secondary" @click="send" />
                 <Button icon="pi pi-microphone" severity="secondary" @click="speechToText" />
@@ -54,11 +57,12 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Image from "primevue/image";
 import Transcript3D from "@/assets/icons/transcription-3d.png";
+import Dropdown from "primevue/dropdown";
 import { useMutation } from "@tanstack/vue-query";
 
 const conversationalAPI = import.meta.env.CONV_API;
 
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import useSettingsStore from "@/store/settings";
 const settings = useSettingsStore();
 import { storeToRefs } from "pinia";
@@ -73,6 +77,40 @@ const { transcript, transientTranscript } = storeToRefs(robot);
 const nextMessage = ref("");
 
 
+const mode = ref('chat');
+const modes = ref([
+    { label: 'Chat with HARV', value: 'chat' },
+    { label: 'Live Transcript', value: 'live' }
+]);
+
+// const switchMode = () => {
+//     mode.value = mode.value === 'chat' ? 'live' : 'chat';
+//     // settings.transcript.messages = [];
+//     nextMessage.value = "";
+// };
+
+// const boxHeader = computed(() => {
+//     return mode.value === 'chat' ? 'Chat with HARV' : 'Live Transcript';
+// });
+
+const showMessage = (messageMode: string) => {
+    switch(messageMode){
+        case "user":
+            return mode.value === 'chat'
+            break;
+        case "status":
+            return mode.value === 'chat'
+            break;
+        case "liveTranscription":
+            return mode.value !== 'chat'
+            break;
+        case "finishedTranscription":
+            return mode.value !== 'chat'
+            break;
+    }
+};
+
+
 const messageClass = (message: any) => {
     return {
         "p-4": true,
@@ -85,6 +123,8 @@ const messageClass = (message: any) => {
         "text-white": message.type === "user",
         "text-blue-900": message.type === "status",
         "bg-gradient-to-r from-purple-400 to-blue-700": message.type === "liveTranscription",
+        "bg-gradient-to-r from-purple-800 to-blue-800": message.type === "finishedTranscription",
+
 
     };
 };
@@ -121,14 +161,14 @@ watch(transcript, (value) => {
     const lastMessage = settings.transcript.messages[settings.transcript.messages.length - 1];
     if(lastMessage.type === "liveTranscription"){
         settings.transcript.messages[settings.transcript.messages.length - 1].text = value;
-        settings.transcript.messages[settings.transcript.messages.length - 1].type = "status";
+        settings.transcript.messages[settings.transcript.messages.length - 1].type = "finishedTranscription";
     }
     else{
-        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: value });
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "finishedTranscription", text: value });
     }
 }
 else{
-    settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: value });
+    settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "finishedTranscription", text: value });
 }   
 });
 

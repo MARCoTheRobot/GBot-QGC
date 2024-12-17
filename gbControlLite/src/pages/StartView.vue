@@ -72,16 +72,16 @@ const initialize = async () => {
         sockID = sock.value.socketId;
         // UDP.joinGroup({socketId: sock.value.socketId, address: serverAddress[0]});
         UDP.addListener('receive', (data) => {
-            console.log('The received data was: ', data);
+            // console.log('The received data was: ', data);
             const receivedString = Buffer.from(data.buffer, 'base64').toString();
             // console.log("The received string was:", receivedString);
             const data1 = receivedString.slice(receivedString.indexOf('>') + 2);
             const dataPrefix2 = data1.slice(0, 1);
-            console.log("The data prefix was:", dataPrefix2, ' and the video data prefix is: ', dataPrefix3['video']);
+            // console.log("The data prefix was:", dataPrefix2, ' and the video data prefix is: ', dataPrefix3['video']);
             const finalData = data1.slice(1);
             if (dataPrefix2 === dataPrefix3['video'].toString()) {
-                console.log("It's video data");
-                imgBuffer.value = `${finalData}`;
+                // console.log("It's video data");
+                // imgBuffer.value = `${finalData}`;
                 // console.log("The final data was:", finalData);
                 return;
             }

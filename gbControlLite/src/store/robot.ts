@@ -65,7 +65,7 @@ const useRobotStore = defineStore("robot", () => {
       try {
         clearInterval(stateSendInterval);
       } catch (e) {
-        console.log(e);
+        console.warn(e);
       }
 
       stateSendInterval = setInterval(() => {
@@ -75,7 +75,7 @@ const useRobotStore = defineStore("robot", () => {
       try {
         clearInterval(stateSendInterval);
       } catch (e) {
-        console.log(e);
+        console.warn(e);
       }
     }
   };
@@ -111,7 +111,7 @@ const useRobotStore = defineStore("robot", () => {
 
     if (dataPrefix2.equals(dataPrefix["video"])) {
       // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
-      console.log("Received video data");
+      // console.log("Received video data");
       videoBuffer.value = data;
       // if(isRecordingVideo.value) {
       //   vidRecorder.addFrame(videoBuffer.value);
@@ -160,10 +160,10 @@ const useRobotStore = defineStore("robot", () => {
   };
 
   watch(isRecordingVideo, (newIsRecordingVideo, oldIsRecordingVideo) => {
-    console.log("VIDCHANGE 1:", newIsRecordingVideo, oldIsRecordingVideo);
+    // console.log("VIDCHANGE 1:", newIsRecordingVideo, oldIsRecordingVideo);
     // If the video recording has stopped, save the video
     if(!newIsRecordingVideo && oldIsRecordingVideo) {
-      console.log("VIDCHANGE 3 - SAVING VIDEO CALL");
+      // console.log("VIDCHANGE 3 - SAVING VIDEO CALL");
       // vidRecorder.saveVideo();
     }
   });
@@ -209,6 +209,7 @@ const useRobotStore = defineStore("robot", () => {
   const CHUNK_SIZE = 3200;
   const NUM_CHANNELS = 1;
   const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
+  const audioStream = AUDIO_CONTEXT.createMediaStreamDestination();
   let bufferSource = null;
   // console.log("MSGAAA: callAudio ", CallAudio);
 
@@ -259,11 +260,11 @@ const useRobotStore = defineStore("robot", () => {
       } catch (err) {
         // Do nothing
       }
-      console.log("MSG 123: Prefix is audio eeffee");
-      console.log("MSG 123: Received audio data eeffee", data);
+      // console.log("MSG 123: Prefix is audio eeffee");
+      // console.log("MSG 123: Received audio data eeffee", data);
 
       const uint8Data = new Uint8Array(data);
-      console.log("DEBUG: transforming data:", uint8Data);
+      // console.log("DEBUG: transforming data:", uint8Data);
       const nowBuffering = convertUint8ToFloat32(uint8Data);
 
       
@@ -273,7 +274,7 @@ const useRobotStore = defineStore("robot", () => {
         sum += nowBuffering[i];
     }
     const avg = sum / nowBuffering.length;
-    console.log("DEBUG: Average value of nowBuffering:", avg);
+    // console.log("DEBUG: Average value of nowBuffering:", avg);
     // Shift the values so that the average is 0
     for (let i = 0; i < nowBuffering.length; i++) {
         nowBuffering[i] -= avg;
@@ -287,18 +288,20 @@ const useRobotStore = defineStore("robot", () => {
       }
 
 
-      console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+      // console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
       const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
       // const nowBuffering = new Float32Array(data.length);
       // for (let i = 0; i < data.length; i++) {
       //     nowBuffering[i] = (data[i] / 128.0 - 1) * 0.4; // Convert from 8-bit PCM to float
       // }
-      console.log("DEBUG: Playing nowBuffering eeffee2", nowBuffering);
+      // console.log("DEBUG: Playing nowBuffering eeffee2", nowBuffering);
       audioBuffer.copyToChannel(nowBuffering, 0); // Copy to the audio buffer
 
       bufferSource = AUDIO_CONTEXT.createBufferSource();
       bufferSource.buffer = audioBuffer;
       bufferSource.connect(AUDIO_CONTEXT.destination); // Connect to speakers
+      // Also connect to the audio stream
+      bufferSource.connect(audioStream);
       // bufferSource.loop = true;
       bufferSource.start();
       // bufferSource.onended = () => {
@@ -537,7 +540,7 @@ const useRobotStore = defineStore("robot", () => {
   const motorInterval = setInterval(() => {
     const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value , -1 * joystick.value[0] * motorTurnSensitivity.value];
     const data = JSON.stringify({ controls: sendJoystick });
-    console.log("Sending data AAAAA:", data);
+    // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
     // console.log("Returning the data to string AAAAA:", bufferData.toString());
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
@@ -583,7 +586,7 @@ const useRobotStore = defineStore("robot", () => {
    * @description - This function is used to override the motor speeds of the robot
    */
   const useMotorOverride = (data: any) => {
-    console.log("Motor override:", data);
+    // console.log("Motor override:", data);
     camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ controls: data }), "utf-8")]));
   };
 
@@ -680,7 +683,7 @@ const useRobotStore = defineStore("robot", () => {
       if (payload.payload.passthrough) {
         // If passthrough is true, the robot will send the payload to the robot as-is
         // This is used to send custom commands to the robot
-        console.log("Sending passthrough:", payload.payload.passthrough);
+        // console.log("Sending passthrough:", payload.payload.passthrough);
         camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify(payload.payload.passthrough), "utf-8")]));
       }
       if (payload.payload.transcribe) {
@@ -709,7 +712,7 @@ const useRobotStore = defineStore("robot", () => {
    * @description - This function is used to send audio commands to the robot to speak
    */
   const useAudioCommand = (command: string) => {
-    console.log("Sending audio command:", command);
+    // console.log("Sending audio command:", command);
     audioComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ command: command }), "utf-8")]));
   };
 
@@ -777,6 +780,8 @@ const useRobotStore = defineStore("robot", () => {
     reboot,
     useHandlePayload,
     SAMPLE_RATE,
+    AUDIO_CONTEXT,
+    audioStream,
     sendMicData,
     micFormatOptions,
     micFormatSelector,

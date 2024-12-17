@@ -4,6 +4,8 @@
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "dist",
+  "hideLogs": true,
+  "loggingBehavior": "none",
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0
@@ -25,10 +27,11 @@
       "10.204.56.41",
       "192.168.1.208:8080",
       "http://192.168.1.208:8080/",
-      "192.168.1.208"
+      "192.168.1.208",
+      "http://10.204.56.64:8080/"
     ],
     "hostname": "localhost",
-    "url": "http://192.168.1.208:8080/",
+    "url": "http://10.204.56.64:8080/",
     "cleartext": true,
     "androidScheme": "https",
     "iosScheme": "https"

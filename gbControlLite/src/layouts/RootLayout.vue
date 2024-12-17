@@ -1,7 +1,7 @@
 <template>
 <Toast />	
 <ConfirmDialog />
-<TranscriptDialog />
+<TranscriptDialog mode="live" />
 <div class="flex flex-row w-full h-full overflow-hidden">
 	
 	<Menu :model="menuItems" class="w-1/6 bg-gray-800">
