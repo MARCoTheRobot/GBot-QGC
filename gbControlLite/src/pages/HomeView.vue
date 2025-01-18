@@ -329,90 +329,10 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 const microphoneOn = ref(false);
-let audioRecorder: MediaRecorder | null = null;
+// let audioRecorder: MediaRecorder | null = null;
 let audioContext: AudioContext | null = null;
 let microphoneStream: MediaStream | null = null;
 let scriptProcessor: ScriptProcessorNode | null = null;
-
-const startStopMicrophoneOLD = async () => {
-	let stream;
-	if (!microphoneOn.value) {
-		try {
-			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-				stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-				toast.add({ severity: 'success', summary: 'Microphone started', life: 3000 });
-			} else {
-				console.error('getUserMedia is not supported in this browser.');
-				toast.add({ severity: 'error', summary: 'Microphone not supported', life: 3000 });
-				return;
-			}
-			audioRecorder = new MediaRecorder(stream);
-			audioRecorder.ondataavailable = (event) => {
-				console.log("The event is ", event);
-
-				const reader = new FileReader();
-				reader.onloadend = () => {
-					let arrayBuffer = reader.result as ArrayBuffer;
-					console.warn("MICDAT: The array buffer is ", arrayBuffer);
-					// You don't need Float32Array here if you're sending 8-bit PCM to the server
-					if (arrayBuffer.byteLength % 4 !== 0) {
-						const newArrayBuffer = new ArrayBuffer(Math.ceil(arrayBuffer.byteLength / 4) * 4);
-						const tempView = new Uint8Array(newArrayBuffer);
-						tempView.set(new Uint8Array(arrayBuffer)); // Copy data into padded buffer
-						arrayBuffer = newArrayBuffer;
-						}
-					const float32Array = new Float32Array(arrayBuffer);
-					const uint8Array = new Uint8Array(arrayBuffer);
-
-					const convertedFloat32Array = convertUint8ToFloat32(uint8Array);
-					// // Convert the data to match your 8-bit PCM format (if needed)
-					// // Assuming the input is 16-bit PCM or another format
-					// const convertedUint8Array = new Uint8Array(uint8Array.length / 2); // Adjust based on actual input
-					// for (let i = 0; i < convertedUint8Array.length; i++) {
-					// 	// Convert 16-bit PCM (if applicable) to 8-bit PCM
-					// 	// For example, take every 2nd byte (simple downsampling)
-					// 	convertedUint8Array[i] = uint8Array[i * 2] / 256; // Adjust as needed based on your input format
-					// }
-
-					// Send it to the UDP Server
-					console.warn("MICDAT: ", float32Array);
-					console.warn("MICDATA: ROBOT MIC FORMAT SELECTOR IS ", robot.micFormatSelector);
-					if(robot.micFormatSelector === 0)
-						robot.sendMicData(arrayBuffer);
-					else if(robot.micFormatSelector === 2)
-						robot.sendMicData(float32Array);
-					else if(robot.micFormatSelector === 1)
-						robot.sendMicData(uint8Array);
-					else if(robot.micFormatSelector === 3)
-						robot.sendMicData(convertedFloat32Array);
-					else
-						robot.sendMicData(arrayBuffer);
-				};
-				const dat = reader.readAsArrayBuffer(event.data);
-				console.log("The data is ", dat);
-
-				// audioChunks.value.push(event.data);
-
-			};
-			audioRecorder.start(250);
-			microphoneOn.value = true;
-			console.log("Microphone started");
-		} catch (error) {
-			console.error('Error accessing microphone:', error);
-		}
-	} else {
-		audioRecorder.stop();
-		microphoneOn.value = false;
-		console.log("Microphone stopped");
-		toast.add({ severity: 'info', summary: 'Microphone stopped', life: 3000 });
-		// const audioBlob = new Blob(audioChunks.value, { type: 'audio/wav' });
-		//         const audioUrl = URL.createObjectURL(audioBlob);
-		//         const audioPlayer = document.createElement('audio');
-		//         audioPlayer.controls = true;
-		//         audioPlayer.src = audioUrl;
-		//         document.body.appendChild(audioPlayer);
-	}
-};
 
 const startStopMicrophone = async () => {
   if (!microphoneOn.value) {

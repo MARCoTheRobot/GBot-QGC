@@ -18,7 +18,8 @@ import { EComm } from "@/utils/externalComm";
 import { VideoRecorder } from "@/utils/videoRecord";
 
 import { useRoute, useRouter } from "vue-router";
-import { buffer } from "stream/consumers";
+
+import { genSpeech } from "@/hooks/api/audio.api";
 
 import silenceAudio from "@/assets/audio/silence.mp3";
 
@@ -162,7 +163,7 @@ const useRobotStore = defineStore("robot", () => {
   watch(isRecordingVideo, (newIsRecordingVideo, oldIsRecordingVideo) => {
     // console.log("VIDCHANGE 1:", newIsRecordingVideo, oldIsRecordingVideo);
     // If the video recording has stopped, save the video
-    if(!newIsRecordingVideo && oldIsRecordingVideo) {
+    if (!newIsRecordingVideo && oldIsRecordingVideo) {
       // console.log("VIDCHANGE 3 - SAVING VIDEO CALL");
       // vidRecorder.saveVideo();
     }
@@ -208,6 +209,8 @@ const useRobotStore = defineStore("robot", () => {
   const SAMPLE_RATE = ref(16000);
   const CHUNK_SIZE = 3200;
   const NUM_CHANNELS = 1;
+  const voiceProfile = ref("en-US-Standard-H");
+  const voiceGain = ref(0.25);
   const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
   const audioStream = AUDIO_CONTEXT.createMediaStreamDestination();
   let bufferSource = null;
@@ -254,41 +257,40 @@ const useRobotStore = defineStore("robot", () => {
     if (dataPrefix2.equals(dataPrefix["audio"])) {
       const currTime = Date.now();
       lastAudioTime.value = currTime;
-      
+
       try {
         clearInterval(audioConnectedInterval);
       } catch (err) {
         // Do nothing
       }
-      // console.log("MSG 123: Prefix is audio eeffee");
-      // console.log("MSG 123: Received audio data eeffee", data);
+      console.log("DEBUG 123: Prefix is audio eeffee");
+      console.log("DEBUG 123: Received audio data eeffee", data);
 
       const uint8Data = new Uint8Array(data);
-      // console.log("DEBUG: transforming data:", uint8Data);
+      console.log("DEBUG: transforming data:", uint8Data);
       const nowBuffering = convertUint8ToFloat32(uint8Data);
+      console.log("DEBUG: transformed data:", nowBuffering);
 
-      
-    // Calculate the average value of the float32 array
-    let sum = 0;
-    for (let i = 0; i < nowBuffering.length; i++) {
+      // Calculate the average value of the float32 array
+      let sum = 0;
+      for (let i = 0; i < nowBuffering.length; i++) {
         sum += nowBuffering[i];
-    }
-    const avg = sum / nowBuffering.length;
-    // console.log("DEBUG: Average value of nowBuffering:", avg);
-    // Shift the values so that the average is 0
-    for (let i = 0; i < nowBuffering.length; i++) {
+      }
+      const avg = sum / nowBuffering.length;
+      // console.log("DEBUG: Average value of nowBuffering:", avg);
+      // Shift the values so that the average is 0
+      for (let i = 0; i < nowBuffering.length; i++) {
         nowBuffering[i] -= avg;
-    }
+      }
 
-    // Iterate over the float32 array. Sometimes the values clip at 1 or -1, so we need to cap them to their nearest neighbor
-    for (let i = 0; i < nowBuffering.length; i++) {
-        if(Math.abs(nowBuffering[i]) >= 1) {
+      // Iterate over the float32 array. Sometimes the values clip at 1 or -1, so we need to cap them to their nearest neighbor
+      for (let i = 0; i < nowBuffering.length; i++) {
+        if (Math.abs(nowBuffering[i]) >= 1) {
           nowBuffering[i] = 1 * 0.5 * Math.sign(nowBuffering[i]);
         }
       }
 
-
-      // console.log("DEBUG: Playing nowBuffering eeffee", nowBuffering);
+      console.log("DEBUG 123: Playing nowBuffering eeffee", nowBuffering);
       const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
       // const nowBuffering = new Float32Array(data.length);
       // for (let i = 0; i < data.length; i++) {
@@ -305,7 +307,7 @@ const useRobotStore = defineStore("robot", () => {
       // bufferSource.loop = true;
       bufferSource.start();
       // bufferSource.onended = () => {
-        
+
       //   setTimeout(() => {
       //   console.log("ABAB: Audio ended");
       //   if(lastAudioTime.value === currTime) {
@@ -358,15 +360,15 @@ const useRobotStore = defineStore("robot", () => {
 
   /**
    * @function sendMicData
-   * @param data 
-   * @returns 
+   * @param data
+   * @returns
    */
   const sendMicData = async (data) => {
     // const nowBuffering = convertUint8ToFloat32(uint8Data);
     console.warn("MICDATA Buffer:", Buffer.from(data));
     const buffer = Buffer.concat([dataPrefix["audio"], Buffer.from(data)]);
     audioComm.sendS(buffer);
-  }
+  };
 
   function buildWaveHeader(opts) {
     const numFrames = opts.numFrames;
@@ -435,8 +437,8 @@ const useRobotStore = defineStore("robot", () => {
     { label: "2048", value: 2048 },
     { label: "4096", value: 4096 },
     { label: "8192", value: 8192 },
-    { label: "16384", value: 16384 }
-  ]
+    { label: "16384", value: 16384 },
+  ];
   // const audioCommDataNEW = (data: any) => {
   //   // console.log("Received data eeffee:", data.toString());
   //   const dataPrefix2 = data.slice(0, 1);
@@ -538,7 +540,7 @@ const useRobotStore = defineStore("robot", () => {
   // });
 
   const motorInterval = setInterval(() => {
-    const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value , -1 * joystick.value[0] * motorTurnSensitivity.value];
+    const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value, -1 * joystick.value[0] * motorTurnSensitivity.value];
     const data = JSON.stringify({ controls: sendJoystick });
     // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
@@ -713,9 +715,119 @@ const useRobotStore = defineStore("robot", () => {
    */
   const useAudioCommand = (command: string) => {
     // console.log("Sending audio command:", command);
-    audioComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ command: command }), "utf-8")]));
+    // audioComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ command: command }), "utf-8")])); NOTE - MOVING TO APP GENERATED SPEECH
+
+    // First, generate the speech
+    genSpeech(command, voiceProfile.value).then((res) => {
+      // Step 1. Convert to an audio buffer
+      console.log("DEBUG: Playing audio buffer:", res);
+
+      toAudioBuff(res.data.data, (buffer) => {
+        console.log("The audio buffer is:", buffer);
+        const source = AUDIO_CONTEXT.createBufferSource();
+        source.buffer = buffer;
+
+        // Step 2. Create a media stream destination
+        const destination = AUDIO_CONTEXT.createMediaStreamDestination();
+
+        // Step 3: Create a ScriptProcessorNode
+        const scriptProcessor = AUDIO_CONTEXT.createScriptProcessor(4096, 1, 1); // Buffer size: 4096 samples
+
+        // Step 4: Process the audio data
+        scriptProcessor.onaudioprocess = (audioEvent) => {
+          const inputBuffer = audioEvent.inputBuffer;
+          const channelData = inputBuffer.getChannelData(0); // Get mono channel data
+
+          // Downsample to 16kHz if needed
+          // const downsampledData = downsampleBuffer(channelData, 44100, 16000);
+          const downsampledData = channelData; // No downsampling needed?
+
+          // Reduce the gain by 10 dB
+          for (let i = 0; i < downsampledData.length; i++) {
+            downsampledData[i] *= voiceGain.value;
+          }
+
+          // Convert to Float32Array for compatibility
+          const audioData = new Float32Array(downsampledData);
+
+          // Send the audio data to the UDP server
+          sendMicData(audioData.buffer);
+        };
+
+        // Step 5: Connect nodes
+        source.connect(destination); // Route audio to MediaStreamDestination
+        destination.stream.getAudioTracks().forEach((track) => {
+          const mediaStreamSource = AUDIO_CONTEXT.createMediaStreamSource(new MediaStream([track]));
+          mediaStreamSource.connect(scriptProcessor);
+        });
+
+        scriptProcessor.connect(AUDIO_CONTEXT.destination); // Optional: Play through speakers
+        // source.connect(AUDIO_CONTEXT.destination); // Play the audio locally
+
+        // Step 6: Start the audio playback
+        source.start();
+
+        source.onended = () => {
+          console.log("Audio ended");
+          // Stop the script processor
+          scriptProcessor.disconnect();
+        };
+      });
+    });
   };
 
+  const toAudioBuff = (buf, callback) => {
+    const ab = new ArrayBuffer(buf.length);
+    const view = new Uint8Array(ab);
+    for (let i = 0; i < buf.length; ++i) {
+      view[i] = buf[i];
+    }
+    AUDIO_CONTEXT.decodeAudioData(ab, (buffer) => {
+      return callback(buffer);
+    });
+  };
+
+  const arrayBufferToBase64 = (buffer, callback) => {
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    callback(window.btoa(binary));
+  };
+
+  // Function to downsample buffer
+  // Function to downsample buffer
+  const downsampleBuffer = (buffer: Float32Array, inSampleRate: number, outSampleRate: number): Float32Array => {
+    if (outSampleRate === inSampleRate) {
+      return buffer; // No resampling needed if rates match
+    }
+
+    const sampleRatio = inSampleRate / outSampleRate;
+    const newLength = Math.round(buffer.length / sampleRatio);
+    const result = new Float32Array(newLength);
+
+    let offsetResult = 0;
+    let offsetBuffer = 0;
+
+    while (offsetResult < result.length) {
+      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRatio);
+      let accum = 0,
+        count = 0;
+
+      for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+        accum += buffer[i];
+        count++;
+      }
+
+      result[offsetResult] = accum / count; // Average the samples for simple downsampling
+      offsetResult++;
+      offsetBuffer = nextOffsetBuffer;
+    }
+
+    return result;
+  };
   /**
    * ---------------------
    * UTILITY FUNCTIONS
@@ -782,12 +894,14 @@ const useRobotStore = defineStore("robot", () => {
     SAMPLE_RATE,
     AUDIO_CONTEXT,
     audioStream,
+    voiceProfile,
+    voiceGain,
     sendMicData,
     micFormatOptions,
     micFormatSelector,
     micBufferOptions,
     micBufferSelection,
-    useAudioCommand
+    useAudioCommand,
   };
 });
 

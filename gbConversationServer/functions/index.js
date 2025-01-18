@@ -99,3 +99,31 @@ exports.commandConversation = onRequest({
   res.send(returnMe);
 });
 
+exports.generateSpeech = onRequest({
+  cors: ["*", "http://localhost", "192.168.1.208", "http://localhost:8080", "192.168.1.208:8080", "http://192.168.1.208:8080", "http://192.168.1.208"],
+}, async (req, res) => {
+  const text = req.body.text;
+  const voiceProfile = req.body.voiceProfile;
+  const textToSpeech = require("@google-cloud/text-to-speech");
+
+
+  const client = new textToSpeech.TextToSpeechClient({
+    key: API_KEY,
+  });
+
+  const request = {
+    input: {text: text},
+    voice: {
+      languageCode: "en-US",
+      name: voiceProfile,
+    },
+    audioConfig: {
+      audioEncoding: "PCM",
+    },
+  };
+
+  const [response] = await client.synthesizeSpeech(request);
+  res.set("Content-Type", "audio/wav");
+  res.send({data: Buffer.from(response.audioContent, "base64")});
+});
+

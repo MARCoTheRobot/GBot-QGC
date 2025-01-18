@@ -236,6 +236,13 @@
     teeny-request "^9.0.0"
     uuid "^8.0.0"
 
+"@google-cloud/text-to-speech@^5.8.0":
+  version "5.8.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/text-to-speech/-/text-to-speech-5.8.0.tgz#4fe1dde6d3fdedd0e7c6ba815fa46b62f711d818"
+  integrity sha512-54/+grFe2duPzUWGVbWe52P4p5SwiUY6jk4XZ6ia9D1MRPG61uD35KvnAf58Kt+T0426amzi0e3P63PHdJA2yw==
+  dependencies:
+    google-gax "^4.0.3"
+
 "@googleapis/sqladmin@^19.0.0":
   version "19.0.0"
   resolved "https://registry.yarnpkg.com/@googleapis/sqladmin/-/sqladmin-19.0.0.tgz#fd8064fb7270060f4b62f6a0fb2f0fd85b29311b"

@@ -31,7 +31,7 @@
 			"http://10.204.56.64:8080/"
 		],
 		"hostname": "localhost",
-		"url": "http://10.204.56.64:8080/",
+		"url": "http://192.168.1.208:8080/",
 		"cleartext": true,
 		"androidScheme": "https",
 		"iosScheme": "https"

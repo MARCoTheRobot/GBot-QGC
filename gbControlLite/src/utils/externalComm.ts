@@ -19,7 +19,7 @@ export class EComm {
         this.serverAddress = targetAddress;
         this.connectId = Buffer.from(`<${id}>`);
         // this.isRobot = isRobot;
-        this.isRobot = false; // This is the client app
+        this.isRobot = false; // This is the client app TODO: SET TO FALSE
         this.sockID = 1; // Initialize to 1
         this.id = id;
         

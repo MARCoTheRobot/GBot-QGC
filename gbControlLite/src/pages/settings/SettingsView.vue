@@ -16,6 +16,13 @@
         <InputNumber v-model="robot.motorDriveSensitivity" mode="decimal" :min="0" :max="1" />
         <p>Turn Strength:</p>
         <InputNumber v-model="robot.motorTurnSensitivity" mode="decimal" :min="0" :max="1" />
+
+        <Divider />
+        <p>Voice Profile</p>
+        <Dropdown v-model="robot.voiceProfile" :options="voiceProfiles" optionLabel="name" optionValue="value" placeholder="Select a Voice Profile" />
+        <p>Voice Gain:</p>
+        <InputNumber v-model="robot.voiceGain" mode="decimal" :min="0" :max="1" />
+
 				
 			</div>
 			<Button class="w-full mt-4" label="Logout" icon="pi pi-sign-out" icon-pos="right" @click="logout" />
@@ -34,6 +41,8 @@ import { useToast } from "primevue/usetoast";
 import { ref } from "vue";
 import InputNumber from "primevue/inputnumber";
 import useRobotStore from "@/store/robot";
+import Divider from "primevue/divider";
+import Dropdown from "primevue/dropdown";
 
 const robot = useRobotStore();
 
@@ -46,6 +55,22 @@ const settingsRoutes = ref([
   { name: "settings", title: "MARCo Settings" },
   { name: "settings", title: "Linked Accounts" },
   { name: "settings", title: "About MARCo" },
+]);
+
+const voiceProfiles = ref([
+  { name: "American Male 1", value: "en-US-Standard-D" },
+  {name: "American Male 2", value: "en-US-Standard-B" },
+  { name: "American Male 3", value: "en-US-Standard-A" },
+  { name: "American Male 4", value: "en-US-Standard-I" },
+  { name: "American Male 5", value: "en-US-Standard-J" },
+  { name: "American Female 1", value: "en-US-Standard-C" },
+  { name: "American Female 2", value: "en-US-Standard-E" },
+  { name: "American Female 3", value: "en-US-Standard-F" },
+  { name: "American Female 4", value: "en-US-Standard-G" },
+  { name: "American Female 4", value: "en-US-Standard-H" },
+  { name: "Australian Male 1", value: "en-AU-Standard-B" },
+  { name: "Australian Female 1", value: "en-AU-Standard-A" },
+  
 ]);
 
 
