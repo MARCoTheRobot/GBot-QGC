@@ -19,7 +19,7 @@
                 <Image :src="Transcript3D" alt="transcript" width="250" />
                 <p class="text-sm italic font-light">{{mode === 'chat' ? 'Send a first message to the robot!':'Waiting for first transcript message'}}</p>
             </div>
-            <div v-else>
+            <div v-else class="flex flex-col gap-4">
                 <div v-for="transcript in settings.transcript.messages"
                     :key="transcript.id" :class="`flex flex-row justify-${transcript.type === 'user' ? 'end' : 'start'} w-full`">
                     <div class="flex flex-col gap-1">
@@ -192,6 +192,7 @@ const { mutate } = useMutation({
     onError: (error) => {
         console.error("error", error);
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: error.message });
+        robot.useAudioCommand(`Sorry, I had an issue with that. Here's why: ${error.message}`);
     }
 
 }

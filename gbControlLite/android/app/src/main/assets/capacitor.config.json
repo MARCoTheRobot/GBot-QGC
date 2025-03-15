@@ -15,7 +15,7 @@
 			"iconColor": "#488AFF"
 		}
 	},
-	"serverDEV": {
+	"server": {
 		"allowNavigation": [
 			"app.marcohealthtech.com/*",
 			"*.marcohealthtech.com",
@@ -28,7 +28,8 @@
 			"192.168.1.208:8080",
 			"http://192.168.1.208:8080/",
 			"192.168.1.208",
-			"http://10.204.56.64:8080/"
+			"http://10.204.56.64:8080/",
+			"wss://api.assemblyai.com"
 		],
 		"hostname": "localhost",
 		"url": "http://192.168.1.208:8080/",
@@ -36,7 +37,7 @@
 		"androidScheme": "https",
 		"iosScheme": "https"
 	},
-	"server": {
+	"serverPROD": {
 		"allowNavigation": [
 			"app.marcohealthtech.com/*",
 			"*.marcohealthtech.com",

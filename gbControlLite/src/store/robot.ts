@@ -26,6 +26,8 @@ import { genSpeech } from "@/hooks/api/audio.api";
 import silenceAudio from "@/assets/audio/silence.mp3";
 import http from "@/lib/http";
 
+import useSettingsStore from "./settings";
+
 
 
 const useRobotStore = defineStore("robot", () => {
@@ -33,6 +35,7 @@ const useRobotStore = defineStore("robot", () => {
   const route = useRoute();
   const router = useRouter();
   const toast = useToast();
+  const settings = useSettingsStore();
 
   const dataPrefix = {
     video: Buffer.from("\x00"),
@@ -232,6 +235,32 @@ const useRobotStore = defineStore("robot", () => {
    * REALTIME TRANSRIPTION
    * ---------------------
    */
+
+  const { mutate: sendCommand } = useMutation({
+    mutationFn: async (text: string) => {
+        return  http({url:"https://commandconversation-kl3exemiua-uc.a.run.app", method: "POST", data:{ text:text, sessionID: "1234" }});
+    },
+
+    onMutate: (text: string) => {
+        // settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "user", text: nextMessage.value });
+        // nextMessage.value = "";
+    },
+    onSuccess: (data) => {
+        console.log("data a a a", data);
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: data.statusResponse });
+        useAudioCommand(data.statusResponse);
+        useHandlePayload(data);
+    },
+    onError: (error) => {
+        console.error("error", error);
+        settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: error.message });
+        useAudioCommand(`Sorry, I had an issue with that. Here's why: ${error.message}`);
+    }
+
+}
+);
+
+
   let transcriber;
   const initializeTranscriber = async () => {
   // transcriber = aaClient.realtime.transcriber({
@@ -263,6 +292,7 @@ const useRobotStore = defineStore("robot", () => {
       console.log('Final:', data.text);
       transcript.value = data.text + " ";
       transientTranscript.value = "";
+      sendCommand(data.text);
     }
   });
 
@@ -308,7 +338,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
       sampleRate: SAMPLE_RATE.value,
       // languageModel: "assemblyai_default
     });
-  // initializeTranscriber();
+  initializeTranscriber();
   });
 
 
@@ -361,8 +391,8 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
       } catch (err) {
         // Do nothing
       }
-      console.log("DEBUG 123: Prefix is audio eeffee");
-      console.log("DEBUG 123: Received audio data eeffee", data);
+      // console.log("DEBUG 123: Prefix is audio eeffee");
+      // console.log("DEBUG 123: Received audio data eeffee", data);
 
       const uint8Data = new Uint8Array(data);
       console.log("DEBUG: transforming data:", uint8Data);
@@ -388,7 +418,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
         }
       }
 
-      console.log("DEBUG 123: Playing nowBuffering eeffee", nowBuffering);
+      // console.log("DEBUG 123: Playing nowBuffering eeffee", nowBuffering);
       const audioBuffer = AUDIO_CONTEXT.createBuffer(1, nowBuffering.length, AUDIO_CONTEXT.sampleRate); // Mono, sample rate 16000 Hz
       // const nowBuffering = new Float32Array(data.length);
       // for (let i = 0; i < data.length; i++) {

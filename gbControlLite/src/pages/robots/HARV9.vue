@@ -2,16 +2,16 @@
 	<div class="w-screen h-screen">
 	<div class="flex flex-col gap-2 overflow-y-auto w-auto">
 		<!--Status Indicators-->
-	<div class="flex flex-row justify-center items-center gap-2 bg-white/20 p-4 rounded-b-md backdrop-blur-md w-auto">
-		<IconBattery class="w-8 h-8 white-text" v-if="robot.batteryCharge < 25"/>
-		<IconBattery1 class="w-8 h-8 white-text" v-else-if="robot.batteryCharge < 50"/>
-		<IconBattery2 class="w-8 h-8 white-text" v-else-if="robot.batteryCharge < 75"/>
-		<IconBattery3 class="w-8 h-8 white-text" v-else-if="robot.batteryCharge < 100"/>
-		<IconBattery4 class="w-8 h-8 white-text" v-else/>
-		<span class="text-white text-lg">{{ robot.batteryVoltage }} V</span>
-		<span class="text-white text-lg">{{ robot.batteryCurrent }} A</span>
-		<span class="text-white text-lg">{{ robot.batteryWattage }} W</span>
-		<span class="text-white text-lg">{{ robot.batteryCharge }}%</span>
+	<div class="flex flex-row justify-center items-center gap-2 bg-white/20 p-2 rounded-b-md backdrop-blur-md w-auto">
+		<IconBattery v-if="robot.batteryCharge < 25" class="w-4 h-4 white-text"/>
+		<IconBattery1 v-else-if="robot.batteryCharge < 50" class="w-4 h-4 white-text"/>
+		<IconBattery2 v-else-if="robot.batteryCharge < 75" class="w-4 h-4 white-text"/>
+		<IconBattery3 v-else-if="robot.batteryCharge < 100" class="w-4 h-4 white-text"/>
+		<IconBattery4 v-else class="w-4 h-4 white-text"/>
+		<span class="text-white text-sm">{{ robot.batteryVoltage }} V</span>
+		<span class="text-white text-sm">{{ robot.batteryCurrent }} A</span>
+		<span class="text-white text-sm">{{ robot.batteryWattage }} W</span>
+		<span class="text-white text-sm">{{ robot.batteryCharge }}%</span>
 		</div>
 		<!--Video display-->
 		<div class="fixed top-0 right-0 z-0 w-screen h-screen overflow-hidden">

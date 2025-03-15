@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { startingImage } from "@/data/videoLoading";
 
-import { EComm } from "@/utils/externalComm";
+import { EComm } from "@/utils/externalComm9";
 import { VideoRecorder } from "@/utils/videoRecord";
 
 import { useRoute, useRouter } from "vue-router";
@@ -45,7 +45,7 @@ const useHARV9Store = defineStore("harv9", () => {
   const state = ref(0);
   let stateSendInterval = setInterval(() => {
     if (typeof state.value === "number" && state.value > -1) {
-      harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
+      videoComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
     }
   }, 250);
 
@@ -54,6 +54,8 @@ const useHARV9Store = defineStore("harv9", () => {
    * STATE MANAGEMENT
    * ---------------------
    */
+
+  const robotID = ref(0);
 
   /**
    * @function setState
@@ -70,7 +72,7 @@ const useHARV9Store = defineStore("harv9", () => {
       }
 
       stateSendInterval = setInterval(() => {
-        harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }), "utf-8")]));
+        videoComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }), "utf-8")]));
       }, 250);
     } else {
       try {
@@ -101,63 +103,14 @@ const useHARV9Store = defineStore("harv9", () => {
   const isRecordingVideo = ref<boolean>(false);
   const vidRecorder = new VideoRecorder();
   /**
-   * @function harv9CommData
+   * @function videoCommData
    * @param data
    * @description - This function is called when data is received from the robot's Camera Communication
    */
-  const harv9CommData = (data: any) => {
-    // console.log("Received data:", data.toString());
-    const dataPrefix2 = data.slice(0, 1);
-    data = data.slice(1);
-
-    if (dataPrefix2.equals(dataPrefix["video"])) {
-      // gui.after(0, () => this.cam.displayVideo(data, this.frameSize)); // needs to be run on tkinter thread otherwise flickering will occur
-      // console.log("Received video data");
-      videoBuffer.value = data;
-      // if(isRecordingVideo.value) {
-      //   vidRecorder.addFrame(videoBuffer.value);
-      //   console.log("VIDCHANGE 2 - ADDED FRAME");
-      // }
-      lastVideoTime.value = Date.now();
-    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
-      const parsedData = JSON.parse(data.toString());
-      for (const [k, i] of Object.entries(parsedData)) {
-        if (k === "internal_temperature") {
-          internalTemperature.value = i;
-        } else if (k === "cpu_temperature") {
-          cpuTemperature.value = i;
-        } else if (k === "pitch") {
-          robotRoll.value = i;
-        } else if (k === "motor_speeds") {
-          m1Speed.value = i[0];
-          m2Speed.value = i[1];
-          // this.motors.lastSpeedValueMotors = i;
-          // this.motors.motorSpeedData(i);
-        } else if (k === "state") {
-          if (i !== state.value) {
-            // gui.setState(i);
-            // this.state = i;
-          }
-        } else if (k === "transcript") {
-          const parsedTranscript = i;
-          if (parsedTranscript["message_type"] === "FinalTranscript") {
-            try {
-              transcript.value = i.text + " ";
-              transientTranscript.value = "";
-            } catch (err) {
-              transcript.value = JSON.stringify(i);
-              transientTranscript.value = "";
-            }
-          } else {
-            try {
-              transientTranscript.value = i.text + " ";
-            } catch (err) {
-              transientTranscript.value = JSON.stringify(i);
-            }
-          }
-        }
-      }
-    }
+  const videoCommData = (data: any) => {
+    const headerLength = 8;
+    const videoData = data.slice(headerLength);
+    videoBuffer.value = videoData;
   };
 
   watch(isRecordingVideo, (newIsRecordingVideo, oldIsRecordingVideo) => {
@@ -192,16 +145,44 @@ const useHARV9Store = defineStore("harv9", () => {
    * EXTERNAL COMMUNICATION
    * ---------------------
    */
-  const harv9Comm = new EComm(["harv9.harv-guardbot.org", 11001], "v" + connectionPassword.value, false); // for live usage
-  // const harv9Comm = new EComm(["10.204.56.61", 8043], "v" + connectionPassword.value, false); // for testing
-  harv9Comm.initialize();
+  const videoComm = new EComm(["harv9.harv-guardbot.org", 11001], "v" + connectionPassword.value, false); // for live usage
+  // const videoComm = new EComm(["10.204.56.61", 8043], "v" + connectionPassword.value, false); // for testing
+  videoComm.initialize();
   // const audioComm = new EComm(["10.204.56.61", 8044], "a" + connectionPassword.value, true);
-  const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
+  const audioComm = new EComm(["harv9.harv-guardbot.org", 11002], "a" + connectionPassword.value, false);
+
+  const controlsComm = new EComm(["harv9.harv-guardbot.org", 11000], "t" + connectionPassword.value, false);
+
+  const controlsCommData = (data: any) => {
+    // console.log("Received data:", data);
+    const headerLength = 8;
+    data = data.slice(headerLength);
+    const jsonData = JSON.parse(data.toString());
+
+    console.log("[CONTROLS] Received data:", jsonData);
+    if (jsonData.hasOwnProperty("cpu_temp")) {
+      cpuTemperature.value = jsonData.cpu_temp;
+    }
+    if (jsonData.hasOwnProperty("follow_mode")) {
+      // internalTemperature.value = jsonData.internal_temp;
+      console.log("[CONTROLS] Follow mode:", jsonData.follow_mode);
+    }
+};
+
+  controlsComm.initialize();
+  controlsComm.receiveLoop((data) => {
+    console.log("[CONTROLS] Received:", data);
+    // motorSpeedData(data);
+    controlsCommData(data);
+
+  });
+
+  
 
   audioComm.initialize();
-  harv9Comm.receiveLoop((data) => {
+  videoComm.receiveLoop((data) => {
     // console.log("Received:", data);
-    harv9CommData(data);
+    videoCommData(data);
   });
 
   const audioActive = ref(false);
@@ -250,11 +231,11 @@ const useHARV9Store = defineStore("harv9", () => {
    */
   const audioCommData = async (data) => {
     // Convert the data to a base64 string
-    const dataPrefix2 = data.slice(0, 1);
-    data = data.slice(1);
+   const headerLength = 8;
+   data.slice(headerLength);
     // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
-    if (dataPrefix2.equals(dataPrefix["audio"])) {
+   
       const currTime = Date.now();
       lastAudioTime.value = currTime;
 
@@ -335,27 +316,7 @@ const useHARV9Store = defineStore("harv9", () => {
       audioConnectedInterval = setInterval(() => {
         audioActive.value = false;
       }, 2000);
-    } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
-      const parsedData = JSON.parse(data.toString());
-      for (const [k, i] of Object.entries(parsedData)) {
-        if (k === "transcript") {
-          const parsedTranscript = i;
-          if (parsedTranscript["message_type"] === "FinalTranscript") {
-            try {
-              transcript.value = i.text + " ";
-            } catch (err) {
-              transcript.value = JSON.stringify(i);
-            }
-          } else {
-            try {
-              transientTranscript.value = i.text + " ";
-            } catch (err) {
-              transientTranscript.value = JSON.stringify(i);
-            }
-          }
-        }
-      }
-    }
+     
   };
 
   /**
@@ -367,7 +328,7 @@ const useHARV9Store = defineStore("harv9", () => {
     // const nowBuffering = convertUint8ToFloat32(uint8Data);
     console.warn("MICDATA Buffer:", Buffer.from(data));
     const buffer = Buffer.concat([dataPrefix["audio"], Buffer.from(data)]);
-    audioComm.sendS(buffer);
+    audioComm.sendAudio(buffer, robotID.value);
   };
 
   const micFormatSelector = ref(0);
@@ -409,15 +370,21 @@ const useHARV9Store = defineStore("harv9", () => {
   // When the joystick is updated, send the new joystick data to the robot
 
 
-  const motorInterval = setInterval(() => {
-    const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value, -1 * joystick.value[0] * motorTurnSensitivity.value];
-    const data = JSON.stringify({ controls: sendJoystick });
+  const controlsInterval = setInterval(() => {
+    const TEMPLATE = {"cam_angle": 0.0, "cam_stable": 1, "force_rpi": 0, "speed": 0, "rotation": 0, "absolute_ping_millis":0};
+
+    const sendData = JSON.parse(JSON.stringify(TEMPLATE));
+
+    sendData.speed = joystick.value[1] * motorDriveSensitivity.value;
+    sendData.rotation = -1 * joystick.value[0] * motorTurnSensitivity.value;
+    // const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value, -1 * joystick.value[0] * motorTurnSensitivity.value];
+    const data = JSON.stringify(sendData);
     // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
     // console.log("Returning the data to string AAAAA:", bufferData.toString());
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
     // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
-    harv9Comm.sendS(concatData);
+    controlsComm.sendS(concatData);
   }, 50);
 
   /**
@@ -459,7 +426,7 @@ const useHARV9Store = defineStore("harv9", () => {
    */
   const useMotorOverride = (data: any) => {
     // console.log("Motor override:", data);
-    harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ controls: data }), "utf-8")]));
+    controlsComm.sendControl(Buffer.concat([Buffer.from(JSON.stringify({ controls: data }), "utf-8")]), robotID.value);
   };
 
   let motorOverrideInterval = 0;
@@ -476,7 +443,7 @@ const useHARV9Store = defineStore("harv9", () => {
    * @description - Sends a shutdown command to the robot
    */
   const shutdown = () => {
-    harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ shutdown: true }), "utf-8")]));
+    videoComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ shutdown: true }), "utf-8")]));
   };
 
   /**
@@ -485,7 +452,7 @@ const useHARV9Store = defineStore("harv9", () => {
    * @description - Sends a reboot command to the robot
    */
   const reboot = () => {
-    harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ reboot: true }), "utf-8")]));
+    videoComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ reboot: true }), "utf-8")]));
   };
 
   /**
@@ -556,7 +523,7 @@ const useHARV9Store = defineStore("harv9", () => {
         // If passthrough is true, the robot will send the payload to the robot as-is
         // This is used to send custom commands to the robot
         // console.log("Sending passthrough:", payload.payload.passthrough);
-        harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify(payload.payload.passthrough), "utf-8")]));
+        controlsComm.sendControl(Buffer.concat([ Buffer.from(JSON.stringify(payload.payload.passthrough), "utf-8")]), robotID.value);
       }
       if (payload.payload.transcribe) {
         // If transcribe is true, the robot will start or stop the transcription
@@ -709,7 +676,7 @@ const batteryCharge = ref(0);
   return {
     states,
     state,
-    harv9Comm,
+    videoComm,
     audioComm,
     connectionPassword,
     joystick,
