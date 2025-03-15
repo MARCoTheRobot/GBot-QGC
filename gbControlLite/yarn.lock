@@ -5997,6 +5997,13 @@ asn1@~0.2.3:
   dependencies:
     safer-buffer "~2.1.0"
 
+assemblyai@^4.9.0:
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/assemblyai/-/assemblyai-4.9.0.tgz#a1d443987c546760f61e4f828afde40d7d20a359"
+  integrity sha512-YUvkVIdMKvMLNQ07zWNma9YWvdSoGZy9RuJ/fB5uceAgDnTL2uo8sAlytkt52hD8DJ61xmZkfO9jkjXl3sZTiw==
+  dependencies:
+    ws "^8.18.0"
+
 assert-plus@1.0.0, assert-plus@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/assert-plus/-/assert-plus-1.0.0.tgz#f12e0f3c5d77b0b1cdd9146942e4e96c1e4dd525"
@@ -15869,6 +15876,11 @@ ws@^8.13.0:
   version "8.18.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.0.tgz#0d7505a6eafe2b0e712d232b42279f53bc289bbc"
   integrity sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==
+
+ws@^8.18.0:
+  version "8.18.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.1.tgz#ea131d3784e1dfdff91adb0a4a116b127515e3cb"
+  integrity sha512-RKW2aJZMXeMxVpnZ6bck+RswznaxmzdULiBr6KY7XkTnW8uvt0iT9H5DkHUChXrc+uurzwa0rVI16n/Xzjdz1w==
 
 xdg-basedir@^4.0.0:
   version "4.0.0"

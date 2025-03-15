@@ -4,12 +4,15 @@ import { RouteRecordRaw, createRouter, createWebHistory } from "vue-router";
 import routeInterceptor from "./krata/router/routeInterceptor";
 
 import StartVue from "@/pages/StartView.vue";
-import HomeView from "@/pages/HomeView.vue";
+import HARV7View from "@/pages/robots/HARV7.vue";
 import RootLayout from "@/layouts/RootLayout.vue";
+import HARV9Layout from "@/layouts/HARV9Layout.vue";
 import TestView from "@/pages/TestView.vue";
 import TestAudioView from "@/pages/TestAudioView.vue";
 import TestAudio2 from "@/pages/TestAudio2.vue";
 import SettingsView from "@/pages/settings/SettingsView.vue";
+import HARV9Page from "@/pages/robots/HARV9.vue";
+import RobotSelect from "@/pages/robots/RobotSelect.vue";
 // import MapStudio from "./pages/MapStudio.vue";
 
 // const routes: RouteRecordRaw[] = [
@@ -28,7 +31,7 @@ import SettingsView from "@/pages/settings/SettingsView.vue";
 //         path: "/",
 //         component: HomeLayout,
 //         children: [
-//           { path: "", name: "Home", component: HomeView, meta: { showChatBar: true, transition: "slide-right" } },
+//           { path: "", name: "Home", component: HARV7View, meta: { showChatBar: true, transition: "slide-right" } },
 //           { path: "/first-time", name: "first-time", component: InitialScreen },
 //           { path: "profile", name: "profile", component: ProfileView, meta: { transition: "slide-right" } },
 //           { path: "preference", name: "preference", component: PreferenceView, meta: { transition: "slide-right" } },
@@ -122,7 +125,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: "/home",
         name: "home",
-            component: HomeView,
+            component: HARV7View,
+      },
+      {
+        path: "/harv7",
+        name: "harv7",
+            component: HARV7View,
       },
       {
         path: "/map",
@@ -134,6 +142,22 @@ const routes: RouteRecordRaw[] = [
         name: "settings",
         component: SettingsView,
       }
+    ],
+  },
+  {
+    path: "/",
+    component: HARV9Layout,
+    children: [
+      {
+        path: "/robot-select",
+        name: "robot-select",
+        component: RobotSelect
+      },
+      {
+        path: "/harv9",
+        name: "harv9",
+        component: HARV9Page,
+      } 
     ],
   },
   {

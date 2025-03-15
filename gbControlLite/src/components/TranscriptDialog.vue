@@ -186,6 +186,7 @@ const { mutate } = useMutation({
     onSuccess: (data) => {
         console.log("data a a a", data);
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: data.statusResponse });
+        robot.useAudioCommand(data.statusResponse);
         robot.useHandlePayload(data);
     },
     onError: (error) => {

@@ -52,7 +52,7 @@
                         <h2 class="text-xl font-bold">Emergency Contacts</h2>
                         <ul class="w-full px-6 mt-2 space-y-2">
                             <li v-for="(contact, index) in contacts" :key="index"
-                                class="flex items-center justify-between w-full p-3 rounded-md bg-slate-700">
+                                class="flex items-center justify-between w-full p-3 rounded-md bg-surface-700">
                                 <span class="font-bold">{{ contact.phoneNumber }}</span>
                                 <Button text severity="warning" icon="pi pi-trash" @click="deleteContact(index)" />
                             </li>

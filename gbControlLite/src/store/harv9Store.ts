@@ -7,8 +7,6 @@ import { Plugins } from "@capacitor/core";
 const { UdpPlugin } = Plugins;
 import { UdpPluginUtils } from "capacitor-udp"; // if you are using capacitor-udp
 
-import {AssemblyAI, RealtimeTranscript, RealtimeTranscriber} from "assemblyai"
-
 import { useMutation } from "@tanstack/vue-query";
 
 import { Preferences } from "@capacitor/preferences";
@@ -24,11 +22,8 @@ import { useRoute, useRouter } from "vue-router";
 import { genSpeech } from "@/hooks/api/audio.api";
 
 import silenceAudio from "@/assets/audio/silence.mp3";
-import http from "@/lib/http";
 
-
-
-const useRobotStore = defineStore("robot", () => {
+const useHARV9Store = defineStore("harv9", () => {
   // Globals
   const route = useRoute();
   const router = useRouter();
@@ -50,7 +45,7 @@ const useRobotStore = defineStore("robot", () => {
   const state = ref(0);
   let stateSendInterval = setInterval(() => {
     if (typeof state.value === "number" && state.value > -1) {
-      camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
+      harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }))]));
     }
   }, 250);
 
@@ -75,7 +70,7 @@ const useRobotStore = defineStore("robot", () => {
       }
 
       stateSendInterval = setInterval(() => {
-        camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }), "utf-8")]));
+        harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ state: state.value }), "utf-8")]));
       }, 250);
     } else {
       try {
@@ -106,11 +101,11 @@ const useRobotStore = defineStore("robot", () => {
   const isRecordingVideo = ref<boolean>(false);
   const vidRecorder = new VideoRecorder();
   /**
-   * @function camCommData
+   * @function harv9CommData
    * @param data
    * @description - This function is called when data is received from the robot's Camera Communication
    */
-  const camCommData = (data: any) => {
+  const harv9CommData = (data: any) => {
     // console.log("Received data:", data.toString());
     const dataPrefix2 = data.slice(0, 1);
     data = data.slice(1);
@@ -197,121 +192,28 @@ const useRobotStore = defineStore("robot", () => {
    * EXTERNAL COMMUNICATION
    * ---------------------
    */
-  const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
-  // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
-  camComm.initialize();
-  // const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, true);
+  const harv9Comm = new EComm(["harv9.harv-guardbot.org", 11001], "v" + connectionPassword.value, false); // for live usage
+  // const harv9Comm = new EComm(["10.204.56.61", 8043], "v" + connectionPassword.value, false); // for testing
+  harv9Comm.initialize();
+  // const audioComm = new EComm(["10.204.56.61", 8044], "a" + connectionPassword.value, true);
   const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
-  camComm.receiveLoop((data) => {
+  harv9Comm.receiveLoop((data) => {
     // console.log("Received:", data);
-    camCommData(data);
+    harv9CommData(data);
   });
 
-  /**
-   * ---------------------
-   * AUDIO COMMUNICATION
-   * ---------------------
-   */
   const audioActive = ref(false);
   const lastAudioTime = ref(0);
   const SAMPLE_RATE = ref(16000);
   const CHUNK_SIZE = 3200;
   const NUM_CHANNELS = 1;
   const voiceProfile = ref("en-US-Standard-H");
-  const voiceGain = ref(1.5);
+  const voiceGain = ref(0.25);
   const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
   const audioStream = AUDIO_CONTEXT.createMediaStreamDestination();
   let bufferSource = null;
-
-  
-
-  /**
-   * ---------------------
-   * REALTIME TRANSRIPTION
-   * ---------------------
-   */
-  let transcriber;
-  const initializeTranscriber = async () => {
-  // transcriber = aaClient.realtime.transcriber({
-  //   sampleRate: SAMPLE_RATE.value,
-  //   // languageModel: "assemblyai_default",
-  // });
-
-  transcriber.on("open", () => {
-    console.log("Transcriber opened");
-  });
-
-  transcriber.on("close", () => {
-    console.log("Transcriber closed");
-  });
-
-  transcriber.on("error", (err) => {
-    console.error("Transcriber error:", err);
-  });
-
-  transcriber.on("transcript", (data: RealtimeTranscript) => {
-    console.log("Transcript:", data);
-    if (!data.text) {
-      return
-    }
-    if (data.message_type === 'PartialTranscript') {
-      console.log('Partial:', data.text);
-      transientTranscript.value = data.text + " ";
-    } else {
-      console.log('Final:', data.text);
-      transcript.value = data.text + " ";
-      transientTranscript.value = "";
-    }
-  });
-
-
-    // Create a MediaStreamAudioSourceNode from the audioStream
-    await transcriber.connect();
-const mediaStreamSource = AUDIO_CONTEXT.createMediaStreamSource(audioStream.stream);
-
-// Create a ScriptProcessorNode to process the audio data
-const scriptProcessor = AUDIO_CONTEXT.createScriptProcessor(4096, 1, 1);
-
-// Connect the MediaStreamAudioSourceNode to the ScriptProcessorNode
-mediaStreamSource.connect(scriptProcessor);
-
-// Process the audio data and send it to the transcriber
-scriptProcessor.onaudioprocess = (audioEvent) => {
-  const inputBuffer = audioEvent.inputBuffer;
-  const channelData = inputBuffer.getChannelData(0); // Get mono channel data
-
-  // Convert the Float32Array to Int16Array for the transcriber
-  const int16Data = new Int16Array(channelData.length);
-  for (let i = 0; i < channelData.length; i++) {
-    int16Data[i] = channelData[i] * 32767; // Convert to 16-bit PCM
-  }
-
-  // Send the audio data to the transcriber
-  transcriber.sendAudio(int16Data.buffer);
-};
-
-// Connect the ScriptProcessorNode to the destination (optional, for monitoring)
-scriptProcessor.connect(AUDIO_CONTEXT.destination);
-
-
-  }
-
-  
-  http.get("https://app.marcohealthtech.com/speech/v2/assemblytoken").then((res) => {
-    console.log("MSGAAA: res ", res);
-    const token = res.token;
-    
-    transcriber = new RealtimeTranscriber({
-      token: token,
-      sampleRate: SAMPLE_RATE.value,
-      // languageModel: "assemblyai_default
-    });
-  // initializeTranscriber();
-  });
-
-
   // console.log("MSGAAA: callAudio ", CallAudio);
 
   // Function to convert Uint8Array to Float32Array
@@ -402,9 +304,6 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
       bufferSource.connect(AUDIO_CONTEXT.destination); // Connect to speakers
       // Also connect to the audio stream
       bufferSource.connect(audioStream);
-
-
-
       // bufferSource.loop = true;
       bufferSource.start();
       // bufferSource.onended = () => {
@@ -471,57 +370,6 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
     audioComm.sendS(buffer);
   };
 
-  function buildWaveHeader(opts) {
-    const numFrames = opts.numFrames;
-    const numChannels = opts.numChannels || 2;
-    const sampleRate = opts.sampleRate || 44100;
-    const bytesPerSample = opts.bytesPerSample || 2;
-    const format = opts.format;
-
-    const blockAlign = numChannels * bytesPerSample;
-    const byteRate = sampleRate * blockAlign;
-    const dataSize = numFrames * blockAlign;
-
-    const buffer = new ArrayBuffer(44);
-    const dv = new DataView(buffer);
-
-    let p = 0;
-
-    function writeString(s) {
-      for (let i = 0; i < s.length; i++) {
-        dv.setUint8(p + i, s.charCodeAt(i));
-      }
-      p += s.length;
-    }
-
-    function writeUint32(d) {
-      dv.setUint32(p, d, true);
-      p += 4;
-    }
-
-    function writeUint16(d) {
-      dv.setUint16(p, d, true);
-      p += 2;
-    }
-
-    writeString("RIFF"); // ChunkID
-    writeUint32(dataSize + 36); // ChunkSize
-    writeString("WAVE"); // Format
-    writeString("fmt "); // Subchunk1ID
-    writeUint32(16); // Subchunk1Size
-    writeUint16(format); // AudioFormat
-    writeUint16(numChannels); // NumChannels
-    writeUint32(sampleRate); // SampleRate
-    writeUint32(byteRate); // ByteRate
-    writeUint16(blockAlign); // BlockAlign
-    writeUint16(bytesPerSample * 8); // BitsPerSample
-    writeString("data"); // Subchunk2ID
-    writeUint32(dataSize); // Subchunk2Size
-
-    return buffer;
-  }
-
-  const myAudio = new Audio();
   const micFormatSelector = ref(0);
   const micFormatOptions = [
     { label: "Array Buffer", value: 0 },
@@ -540,82 +388,14 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
     { label: "8192", value: 8192 },
     { label: "16384", value: 16384 },
   ];
-  // const audioCommDataNEW = (data: any) => {
-  //   // console.log("Received data eeffee:", data.toString());
-  //   const dataPrefix2 = data.slice(0, 1);
-  //   data = data.slice(1);
-  //   // console.log("Received audio data eeffee", dataPrefix2, dataPrefix["audio"]);
 
-  //   if (dataPrefix2.equals(dataPrefix["audio"])) {
-  //     console.log("MSG 123: Prefix is audio eeffee");
-  //     console.log("MSG 123: Received audio data eeffee", data);
-
-  //     const sampleRate = 16000; // samples per second
-  //     const numChannels = 1; // mono or stereo
-  //     const isFloat = false; // integer or floating point
-  //     const [type, format] = isFloat ? [Float32Array, 3] : [Uint8Array, 1];
-
-  //     const wavHeader = new Uint8Array(
-  //       buildWaveHeader({
-  //         numFrames: data.byteLength / type.BYTES_PER_ELEMENT,
-  //         bytesPerSample: type.BYTES_PER_ELEMENT,
-  //         sampleRate,
-  //         numChannels,
-  //         format,
-  //       })
-  //     );
-
-  //     console.log("The wavHeader is:", wavHeader);
-  //     // create WAV file with header and downloaded PCM audio
-  //     const wavBytes = new Uint8Array(wavHeader.length + data.byteLength);
-  //     wavBytes.set(wavHeader, 0);
-  //     wavBytes.set(data, wavHeader.length);
-  //     const base64String = btoa(String.fromCharCode(...wavBytes));
-  //     const dataURI = `data:audio/wav;base64,${base64String}`;
-  //     myAudio.src = dataURI;
-  //     myAudio.play();
-  //   } else if (dataPrefix2.equals(dataPrefix["json_data"])) {
-  //     const parsedData = JSON.parse(data.toString());
-  //     for (const [k, i] of Object.entries(parsedData)) {
-  //       if (k === "transcript") {
-  //         const parsedTranscript = i;
-  //         if (parsedTranscript["message_type"] === "FinalTranscript") {
-  //           try {
-  //             transcript.value = i.text + " ";
-  //           } catch (err) {
-  //             transcript.value = JSON.stringify(i);
-  //           }
-  //         } else {
-  //           try {
-  //             transientTranscript.value = i.text + " ";
-  //           } catch (err) {
-  //             transientTranscript.value = JSON.stringify(i);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // };
 
   audioComm.receiveLoop((data) => {
     // console.log("Received:", data);
     audioCommData(data);
   });
 
-  /**
-   * @function streamAudioBuffer
-   * @description - this loops through the audio buffers and plays them in order
-   */
-  // const streamAudioBuffer = setInterval(() => {
-  //   if (nextAudioBuffer) {
-  //     console.log("#NEXT BUFFER#", nextAudioBuffer)
-  //     const source = audioContext.createBufferSource();
-  //     source.buffer = nextAudioBuffer;
-  //     source.connect(audioContext.destination);
-  //     source.start();
-  //     // nextAudioBuffer = null;
-  //   }
-  // }, Math.floor(1000 / 16));
+
 
   /**
    * ---------------------
@@ -627,18 +407,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
   const joystick = ref([0, 0]);
 
   // When the joystick is updated, send the new joystick data to the robot
-  // watch(joystick, (newJoystick) => {
-  //   // console.log("Joystick updated:", newJoystick);
-  //   // The joystick x and y inputs are reversed for the virtual joystick versus the physical joystick, so we will need to flip the values
-  //   const sendJoystick = [newJoystick[1], -1 * newJoystick[0]];
-  //   const data = JSON.stringify({ controls: sendJoystick });
-  //   // console.log("Sending data AAAAA:", data);
-  //   const bufferData = Buffer.from(data, "utf-8");
-  //   // console.log("Returning the data to string AAAAA:", bufferData.toString());
-  //   const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
-  //   // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
-  //   camComm.sendS(concatData);
-  // });
+
 
   const motorInterval = setInterval(() => {
     const sendJoystick = [joystick.value[1] * motorDriveSensitivity.value, -1 * joystick.value[0] * motorTurnSensitivity.value];
@@ -648,7 +417,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
     // console.log("Returning the data to string AAAAA:", bufferData.toString());
     const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
     // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
-    camComm.sendS(concatData);
+    harv9Comm.sendS(concatData);
   }, 50);
 
   /**
@@ -690,7 +459,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
    */
   const useMotorOverride = (data: any) => {
     // console.log("Motor override:", data);
-    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ controls: data }), "utf-8")]));
+    harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ controls: data }), "utf-8")]));
   };
 
   let motorOverrideInterval = 0;
@@ -707,7 +476,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
    * @description - Sends a shutdown command to the robot
    */
   const shutdown = () => {
-    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ shutdown: true }), "utf-8")]));
+    harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ shutdown: true }), "utf-8")]));
   };
 
   /**
@@ -716,7 +485,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
    * @description - Sends a reboot command to the robot
    */
   const reboot = () => {
-    camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ reboot: true }), "utf-8")]));
+    harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify({ reboot: true }), "utf-8")]));
   };
 
   /**
@@ -755,8 +524,8 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
          * and how long it needs to drive
          */
 
-        const HARV7_WHEEL_DIAMETER = 7; // inches
-        const HARV_7_MAX_RPM = 10; // RPM
+        const HARV9_WHEEL_DIAMETER = 9; // inches
+        const HARV_9_MAX_RPM = 10; // RPM
         const distanceNumber = payload.params && payload.params.distance ? parseFloat(payload.params.distance) : 100; // Unitless
         const unit = payload.params && payload.params.distanceUnit ? payload.params.distanceUnit : "feet"; // inches
         const direction = payload.params && payload.params.direction ? directionToSign(payload.params.direction) : directionToSign("forward"); // forward or backward
@@ -765,9 +534,9 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
         const distance = unitToInches(unit, distanceNumber);
 
         // Calculate how long the robot needs to drive based on the distance, diameter, and RPM
-        const distancePerRevolution = Math.PI * HARV7_WHEEL_DIAMETER; // inches
+        const distancePerRevolution = Math.PI * HARV9_WHEEL_DIAMETER; // inches
         const rotationsRequired = distance / distancePerRevolution; // How many rotations the robot needs to make to go the distance
-        const timeRequired = rotationsRequired / HARV_7_MAX_RPM; // How long the robot needs to drive to go the distance - minutes
+        const timeRequired = rotationsRequired / HARV_9_MAX_RPM; // How long the robot needs to drive to go the distance - minutes
         const secondsRequired = timeRequired * 60; // How long the robot needs to drive to go the distance - seconds
         let currSeconds = 0;
         const motorOverridePing = 50; // ms
@@ -787,7 +556,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
         // If passthrough is true, the robot will send the payload to the robot as-is
         // This is used to send custom commands to the robot
         // console.log("Sending passthrough:", payload.payload.passthrough);
-        camComm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify(payload.payload.passthrough), "utf-8")]));
+        harv9Comm.sendS(Buffer.concat([dataPrefix["json_data"], Buffer.from(JSON.stringify(payload.payload.passthrough), "utf-8")]));
       }
       if (payload.payload.transcribe) {
         // If transcribe is true, the robot will start or stop the transcription
@@ -888,47 +657,18 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
     });
   };
 
-  const arrayBufferToBase64 = (buffer, callback) => {
-    let binary = "";
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    callback(window.btoa(binary));
-  };
 
-  // Function to downsample buffer
-  // Function to downsample buffer
-  const downsampleBuffer = (buffer: Float32Array, inSampleRate: number, outSampleRate: number): Float32Array => {
-    if (outSampleRate === inSampleRate) {
-      return buffer; // No resampling needed if rates match
-    }
+/**
+ * ---------------------
+ * TELEMETRY DATA 
+ * ---------------------
+ */
 
-    const sampleRatio = inSampleRate / outSampleRate;
-    const newLength = Math.round(buffer.length / sampleRatio);
-    const result = new Float32Array(newLength);
+const batteryVoltage = ref(0);
+const batteryCurrent = ref(0);
+const batteryWattage = ref(0);
+const batteryCharge = ref(0);
 
-    let offsetResult = 0;
-    let offsetBuffer = 0;
-
-    while (offsetResult < result.length) {
-      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRatio);
-      let accum = 0,
-        count = 0;
-
-      for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
-        accum += buffer[i];
-        count++;
-      }
-
-      result[offsetResult] = accum / count; // Average the samples for simple downsampling
-      offsetResult++;
-      offsetBuffer = nextOffsetBuffer;
-    }
-
-    return result;
-  };
   /**
    * ---------------------
    * UTILITY FUNCTIONS
@@ -969,7 +709,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
   return {
     states,
     state,
-    camComm,
+    harv9Comm,
     audioComm,
     connectionPassword,
     joystick,
@@ -1003,7 +743,16 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
     micBufferOptions,
     micBufferSelection,
     useAudioCommand,
+    /**
+     * ---------------------
+     * TELEMETRY DATA
+     * ---------------------
+     */
+    batteryVoltage,
+    batteryCurrent,
+    batteryWattage,
+    batteryCharge,
   };
 });
 
-export default useRobotStore;
+export default useHARV9Store;

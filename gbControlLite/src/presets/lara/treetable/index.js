@@ -58,7 +58,7 @@ export default {
   footer: {
     class: [
       // Background, Border & Text
-      "bg-slate-50 text-slate-700",
+      "bg-surface-50 text-slate-700",
       "border border-x-0 border-t-0 border-surface-50",
       // Padding & Font
       "p-4 font-bold",

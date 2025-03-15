@@ -1,6 +1,6 @@
 <template>
   <AppHeader type="internal" />
-  <div class="relative flex flex-col h-screen px-4 py-6 dark:bg-slate-900">
+  <div class="relative flex flex-col h-screen px-4 py-6 dark:bg-surface-900">
     <div class="flex-1">
       <Button severity="secondary" class="!p-0 !absolute top-7 left-4" text rounded @click="$router.back()">
         <IconChevronLeft class="text-surface-500" stroke="2" size="30" />
@@ -8,7 +8,7 @@
       <h1 class="text-3xl font-semibold text-center">Settings</h1>
 			<div class="gap-4">
 				<!-- <RouterLink v-for="(route, r) in settingsRoutes" :key="`settings-route-${r}`" v-ripple :to="{ name: route.name }" 
-					class="flex items-center justify-between p-3 my-2 text-lg rounded-md cursor-pointer hover:bg-slate-400 bg-slate-700">
+					class="flex items-center justify-between p-3 my-2 text-lg rounded-md cursor-pointer hover:bg-surface-400 bg-surface-700">
 					<span class="font-semibold">{{ route.title }}</span>
 					<IconChevronRight stroke="2" size="30" />
 				</RouterLink> -->

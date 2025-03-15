@@ -30,7 +30,7 @@
 			</template>
 	</Menu>
 	
-	<div class="flex-col w-5/6 bg-slate-900">
+	<div class="flex-col w-5/6 bg-surface-900">
 		<AppHeader type="internal" />
 		<div class="flex-initial h-full overflow-x-hidden overflow-y-auto">
 			<router-view v-slot="{ Component }">
