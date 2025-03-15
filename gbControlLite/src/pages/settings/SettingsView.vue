@@ -23,6 +23,10 @@
         <p>Voice Gain:</p>
         <InputNumber v-model="robot.voiceGain" mode="decimal" :min="0" :max="1" />
 
+        <Divider />
+        <p>Voice commands come from:</p>
+        <Dropdown v-model="robot.commandsFrom" :options="commandsFromOpts" placeholder="Select a source" />
+
 				
 			</div>
 			<Button class="w-full mt-4" label="Logout" icon="pi pi-sign-out" icon-pos="right" @click="logout" />
@@ -73,6 +77,10 @@ const voiceProfiles = ref([
   
 ]);
 
+const commandsFromOpts = [
+  "app",
+  "robot"
+]
 
 
 </script>

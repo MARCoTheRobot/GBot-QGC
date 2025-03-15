@@ -1,7 +1,7 @@
 <template>
   <Toast />	
   <ConfirmDialog />
-  <TranscriptDialog mode="live" />
+  <!-- <TranscriptDialog mode="live" /> -->
   <div class="flex flex-row w-full h-full overflow-hidden">
     
   
@@ -38,23 +38,13 @@
   import TranscriptDialog from "@/components/TranscriptDialog.vue";
   import { useRouter } from "vue-router";
   import Dropdown from "primevue/dropdown";
-  import useRobotStore from "@/store/robot";
-  const robot = useRobotStore();
+  // import useRobotStore from "@/store/robot";
+  // const robot = useRobotStore();
   
   const router = useRouter();
   const toast = useToast();
   toast.add({ severity: "success", summary: "Success Message", detail: `${settings.user}` });
-  const menuItems = ref([
-    { label: "Robot Mode", icon: "pi pi-fw pi-home", command: () => {
-      router.push("/home");
-    } },
-    { label: "Mission Planner", icon: "pi pi-fw pi-map", command: () => {
-      router.push("/map");
-    } },
-    { label: "Settings", icon: "pi pi-fw pi-cog", command: () => {
-      router.push("/settings");
-    } },
-  ]);
+  
   </script>
   
   <style scoped>

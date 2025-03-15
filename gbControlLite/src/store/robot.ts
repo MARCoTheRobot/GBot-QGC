@@ -236,6 +236,7 @@ const useRobotStore = defineStore("robot", () => {
    * ---------------------
    */
 
+  const commandsFrom = ref<'app' | 'robot'>("app");
   const { mutate: sendCommand } = useMutation({
     mutationFn: async (text: string) => {
         return  http({url:"https://commandconversation-kl3exemiua-uc.a.run.app", method: "POST", data:{ text:text, sessionID: "1234" }});
@@ -260,7 +261,7 @@ const useRobotStore = defineStore("robot", () => {
 }
 );
 
-
+  
   let transcriber;
   const initializeTranscriber = async () => {
   // transcriber = aaClient.realtime.transcriber({
@@ -292,7 +293,9 @@ const useRobotStore = defineStore("robot", () => {
       console.log('Final:', data.text);
       transcript.value = data.text + " ";
       transientTranscript.value = "";
-      sendCommand(data.text);
+      if(commandsFrom.value === "robot") {
+        sendCommand(data.text);
+      }
     }
   });
 
@@ -997,6 +1000,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
 
   // Return all public variables and functions
   return {
+    commandsFrom,
     states,
     state,
     camComm,

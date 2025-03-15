@@ -55,7 +55,7 @@ const useHARV9Store = defineStore("harv9", () => {
    * ---------------------
    */
 
-  const robotID = ref(0);
+  const robotID = ref<number>(0);
 
   /**
    * @function setState
@@ -155,27 +155,27 @@ const useHARV9Store = defineStore("harv9", () => {
 
   const controlsCommData = (data: any) => {
     // console.log("Received data:", data);
-    const headerLength = 8;
-    data = data.slice(headerLength);
+    // const headerLength = 8;
+    // data = data.slice(headerLength);
     const jsonData = JSON.parse(data.toString());
 
-    console.log("[CONTROLS] Received data:", jsonData);
+    // console.log("[CONTROLS] Received data:", data);
     if (jsonData.hasOwnProperty("cpu_temp")) {
       cpuTemperature.value = jsonData.cpu_temp;
     }
     if (jsonData.hasOwnProperty("follow_mode")) {
       // internalTemperature.value = jsonData.internal_temp;
-      console.log("[CONTROLS] Follow mode:", jsonData.follow_mode);
+      // console.log("[CONTROLS] Follow mode:", jsonData.follow_mode);
     }
 };
 
   controlsComm.initialize();
   controlsComm.receiveLoop((data) => {
-    console.log("[CONTROLS] Received:", data);
+    // console.log("[CONTROLS] Received:", data);
     // motorSpeedData(data);
     controlsCommData(data);
 
-  });
+  }, 2);
 
   
 
@@ -183,12 +183,11 @@ const useHARV9Store = defineStore("harv9", () => {
   videoComm.receiveLoop((data) => {
     // console.log("Received:", data);
     videoCommData(data);
-  });
+  }, 1);
 
   const audioActive = ref(false);
   const lastAudioTime = ref(0);
-  const SAMPLE_RATE = ref(16000);
-  const CHUNK_SIZE = 3200;
+  const SAMPLE_RATE = ref(Math.ceil(16000/3));
   const NUM_CHANNELS = 1;
   const voiceProfile = ref("en-US-Standard-H");
   const voiceGain = ref(0.25);
@@ -230,6 +229,7 @@ const useHARV9Store = defineStore("harv9", () => {
    * @description - This function is called when data is received from the robot's Audio Communication
    */
   const audioCommData = async (data) => {
+    console.log("Received audio data.");
     // Convert the data to a base64 string
    const headerLength = 8;
    data.slice(headerLength);
@@ -354,7 +354,7 @@ const useHARV9Store = defineStore("harv9", () => {
   audioComm.receiveLoop((data) => {
     // console.log("Received:", data);
     audioCommData(data);
-  });
+  }, 0);
 
 
 
@@ -382,9 +382,9 @@ const useHARV9Store = defineStore("harv9", () => {
     // console.log("Sending data AAAAA:", data);
     const bufferData = Buffer.from(data, "utf-8");
     // console.log("Returning the data to string AAAAA:", bufferData.toString());
-    const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
+    // const concatData = Buffer.concat([dataPrefix["json_data"], bufferData]);
     // console.log("Returning the concatdata to string AAAAA:", concatData.toString());
-    controlsComm.sendS(concatData);
+    controlsComm.sendControl(bufferData, robotID.value);
   }, 50);
 
   /**

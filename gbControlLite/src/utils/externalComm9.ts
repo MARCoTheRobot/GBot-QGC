@@ -87,11 +87,12 @@ export class EComm {
     }
 
     public sendControl(data: Buffer, robotID: number): number {
-        const prefix = Buffer.from([robotID]);
+        const prefix = Buffer.from([(0b01000000 + robotID)]);
+        // console.log("Sending control data:", Buffer.concat([prefix, data]));
         return this.send(Buffer.concat([prefix, data]));
     }
 
-    public receiveLoop(recvFunction: (data: Buffer) => void): void {
+    public receiveLoop(recvFunction: (data: Buffer) => void, prefix: number): void {
         // console.log("Starting receive loop");
         let lastConnectionCheckTime = 0;
         const connectionCheckInterval = 0.5;
@@ -129,9 +130,20 @@ export class EComm {
             //         }
             //     }
             // }
+            // console.log("Receive loop running");
+            // Get the first byte of the data
+            const header = data1[0];
+            const fromRobot = (header & 0b10000000) !== 0;
+            const dataType = (header & 0b01100000) >> 5;
+            const robotId = header & 0b00011111;
+            console.log("The robot ID is:", robotId);
 
-            recvFunction(data1);
-            this.lastReceiveTime = Date.now();
+            if (fromRobot && dataType === prefix) {
+                const dataContent = data1.slice(1); // Remove the header byte
+                recvFunction(dataContent);
+                this.lastReceiveTime = Date.now();
+            }
+           
         });
 
         UDP.addListener('receiveError', (error: any) => {
