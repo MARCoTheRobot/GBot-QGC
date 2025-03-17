@@ -108,9 +108,11 @@ const useHARV9Store = defineStore("harv9", () => {
    * @description - This function is called when data is received from the robot's Camera Communication
    */
   const videoCommData = (data: any) => {
+    // console.log("Received video data.");
     const headerLength = 8;
     const videoData = data.slice(headerLength);
-    videoBuffer.value = videoData;
+    videoBuffer.value = videoData.toString("base64");
+    console.log("Received video data:", videoBuffer.value);
   };
 
   watch(isRecordingVideo, (newIsRecordingVideo, oldIsRecordingVideo) => {
@@ -205,7 +207,7 @@ const useHARV9Store = defineStore("harv9", () => {
     for (let i = 0; i < float32Array.length; i++) {
       float32Array[i] = dataView.getFloat32(i * 4, true); // true for little-endian byte order
       // Amplify by 3
-      float32Array[i] *= 10;
+      // float32Array[i] *= 10;
       // Cap it at -1 or 1
       float32Array[i] = Math.max(-1, Math.min(float32Array[i], 1));
     }
@@ -229,7 +231,7 @@ const useHARV9Store = defineStore("harv9", () => {
    * @description - This function is called when data is received from the robot's Audio Communication
    */
   const audioCommData = async (data) => {
-    console.log("Received audio data.");
+    // console.log("Received audio data.");
     // Convert the data to a base64 string
    const headerLength = 8;
    data.slice(headerLength);
@@ -244,13 +246,13 @@ const useHARV9Store = defineStore("harv9", () => {
       } catch (err) {
         // Do nothing
       }
-      console.log("DEBUG 123: Prefix is audio eeffee");
-      console.log("DEBUG 123: Received audio data eeffee", data);
+      // console.log("DEBUG 123: Prefix is audio eeffee");
+      // console.log("DEBUG 123: Received audio data eeffee", data);
 
       const uint8Data = new Uint8Array(data);
-      console.log("DEBUG: transforming data:", uint8Data);
+      // console.log("DEBUG: transforming data:", uint8Data);
       const nowBuffering = convertUint8ToFloat32(uint8Data);
-      console.log("DEBUG: transformed data:", nowBuffering);
+      // console.log("DEBUG: transformed data:", nowBuffering);
 
       // Calculate the average value of the float32 array
       let sum = 0;

@@ -11,8 +11,9 @@
 		<!--Quick controls dock-->
 		<Dock :model="dockItems" position="bottom" class="z-1">
 			<template #icon="{ item }">
-				<div class="w-full" @click="item.action($event)" aria-haspopup="true" aria-controls="overlay_menu">
-					<img :src="item.icon" alt="icon" class="w-full" />
+				<div class="w-full flex flex-col" @click="item.action($event)" aria-haspopup="true" aria-controls="overlay_menu">
+					<img :src="item.icon" alt="icon" class="w-2/3" />
+					<p class="text-center text-xs">{{ item.label }}</p>
 				</div>
 			</template>
 		</Dock>
@@ -128,7 +129,7 @@ const dockItems = ref<any>([
 	},
 	{
 		icon: Chat3D,
-		label: "Transcript",
+		label: "Chat & Transcript",
 		action: (event: any) => {
 			settings.transcript.show = !settings.transcript.show;
 			// settings.transcript.messages = [];
@@ -177,7 +178,7 @@ const dockItems = ref<any>([
 	},
 	{
 		icon: Audio3D,
-		label: "Record Audio",
+		label: "Send your voice",
 		action: () => {
 			startStopMicrophone();
 		}

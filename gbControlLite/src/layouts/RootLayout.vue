@@ -70,8 +70,11 @@ const router = useRouter();
 const toast = useToast();
 toast.add({ severity: "success", summary: "Success Message", detail: `${settings.user}` });
 const menuItems = ref([
+	{ label: "Home", icon: "pi pi-fw pi-home", command: () => {
+		router.push("/robot-select");
+	} },
 	{ label: "Robot Mode", icon: "pi pi-fw pi-home", command: () => {
-		router.push("/home");
+		router.push("/harv7");
 	} },
 	{ label: "Mission Planner", icon: "pi pi-fw pi-map", command: () => {
 		router.push("/map");

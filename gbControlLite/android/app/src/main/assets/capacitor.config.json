@@ -15,7 +15,7 @@
 			"iconColor": "#488AFF"
 		}
 	},
-	"server": {
+	"serverDEV": {
 		"allowNavigation": [
 			"app.marcohealthtech.com/*",
 			"*.marcohealthtech.com",
@@ -37,7 +37,7 @@
 		"androidScheme": "https",
 		"iosScheme": "https"
 	},
-	"serverPROD": {
+	"server": {
 		"allowNavigation": [
 			"app.marcohealthtech.com/*",
 			"*.marcohealthtech.com",

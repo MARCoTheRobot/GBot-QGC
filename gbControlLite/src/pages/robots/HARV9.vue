@@ -23,7 +23,7 @@
 		
 		<!--Video display-->
 		<div class="fixed top-0 right-0 z-0 w-screen h-screen overflow-hidden">
-			<canvas id="videoCanvas" class="w-full h-full" />
+			<!-- <canvas id="videoCanvas" class="w-full h-full" /> -->
 			<img :src="`data:image/jpeg;base64,${robot.videoBuffer}`" alt="PrimeVue logo"
 				class="hidden w-screen h-screen" id="img2" />
 		</div>
@@ -39,6 +39,7 @@
 	</div>
 	</Sidebar>
 
+	<button class="fixed p-2 border-white rounded-full top-4 left-8 bg-gray-900/20 outline hover:bg-slate-300/20 flex flex-row" @click="$router.push('/robot-select')"><IconChevronLeft class="w-4 h-4" /> Back</button>
 
 	<button class="fixed p-5 border-white rounded-full bottom-48 left-24 bg-gray-900/20 outline hover:bg-slate-300/20" @click="showSettingsSidebar = !showSettingsSidebar"><IconSettings class="w-8 h-8" /></button>
 
@@ -73,7 +74,7 @@ import Slider from "primevue/slider";
 import useHARV9Store from "@/store/harv9Store";
 import { doc } from "firebase/firestore";
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import { IconSettings, IconMicrophone, IconBattery, IconBattery1, IconBattery2, IconBattery3, IconBattery4, IconTemperatureCelsius } from "@tabler/icons-vue";
+import { IconChevronLeft, IconSettings, IconMicrophone, IconBattery, IconBattery1, IconBattery2, IconBattery3, IconBattery4, IconTemperatureCelsius } from "@tabler/icons-vue";
 
 const robot = useHARV9Store();
 
@@ -82,18 +83,18 @@ const showSettingsSidebar = ref<boolean>(false);
 
 const { videoBuffer } = storeToRefs(robot);
 
-watch(videoBuffer, (newVal) => {
-	const canvas = document.getElementById('videoCanvas') as HTMLCanvasElement;
-	const ctx = canvas.getContext('2d');
-	const img = document.getElementById('img2') as HTMLImageElement;
-	img.onload = () => {
-		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-		requestAnimationFrame(() => {
-			img.src = `data:image/jpeg;base64,${newVal}`;
-		})
-	}
-	// img.src = `data:image/jpeg;base64,${newVal}`;
-})
+// watch(videoBuffer, (newVal) => {
+// 	const canvas = document.getElementById('videoCanvas') as HTMLCanvasElement;
+// 	const ctx = canvas.getContext('2d');
+// 	const img = document.getElementById('img2') as HTMLImageElement;
+// 	img.onload = () => {
+// 		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+// 		requestAnimationFrame(() => {
+// 			img.src = `data:image/jpeg;base64,${newVal}`;
+// 		})
+// 	}
+// 	// img.src = `data:image/jpeg;base64,${newVal}`;
+// })
 
 const joystickStartEvent = () => {
 	console.log('start')

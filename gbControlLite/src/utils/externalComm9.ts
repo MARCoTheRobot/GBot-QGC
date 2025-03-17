@@ -136,7 +136,7 @@ export class EComm {
             const fromRobot = (header & 0b10000000) !== 0;
             const dataType = (header & 0b01100000) >> 5;
             const robotId = header & 0b00011111;
-            console.log("The robot ID is:", robotId);
+            console.log("The robot ID is:", robotId, " The data type is:", dataType, " The from robot is:", fromRobot);
 
             if (fromRobot && dataType === prefix) {
                 const dataContent = data1.slice(1); // Remove the header byte
