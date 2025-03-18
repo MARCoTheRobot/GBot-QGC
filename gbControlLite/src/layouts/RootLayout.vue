@@ -9,7 +9,10 @@
 			<Image :src="logoImg" alt="logo" />
 		</template>
 		<template #end>
-			<div class="flex flex-col items-center">
+			<Divider />
+			<div class="flex flex-col items-center ">
+				<p class="font-bold text-md min-h-4">{{ robot.transientTranscript }}</p>
+				<canvas id="audio-canvas" width="200" height="50"></canvas>
 				<!-- <Dropdown 
 					:options="robot.micFormatOptions" 
 					v-model="robot.micFormatSelector" 
@@ -64,6 +67,7 @@ import TranscriptDialog from "@/components/TranscriptDialog.vue";
 import { useRouter } from "vue-router";
 import Dropdown from "primevue/dropdown";
 import useRobotStore from "@/store/robot";
+import Divider from "primevue/divider";
 const robot = useRobotStore();
 
 const router = useRouter();

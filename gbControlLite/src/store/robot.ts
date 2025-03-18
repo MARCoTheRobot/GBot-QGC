@@ -203,8 +203,8 @@ const useRobotStore = defineStore("robot", () => {
   const camComm = new EComm(["harv7.harv-guardbot.org", 8043], "v" + connectionPassword.value, false); // for live usage
   // const camComm = new EComm(["192.168.1.208", 8043], "v" + connectionPassword.value, false); // for testing
   camComm.initialize();
-  // const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, true);
-  const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
+  const audioComm = new EComm(["192.168.1.208", 8044], "a" + connectionPassword.value, true);
+  // const audioComm = new EComm(["harv7.harv-guardbot.org", 8044], "a" + connectionPassword.value, false);
 
   audioComm.initialize();
   camComm.receiveLoop((data) => {
@@ -223,7 +223,23 @@ const useRobotStore = defineStore("robot", () => {
   const CHUNK_SIZE = 3200;
   const NUM_CHANNELS = 1;
   const voiceProfile = ref("en-US-Standard-H");
+
+  // Load voiceProfile from localstorage
+  const voiceProfileLS = localStorage.getItem("voiceProfile");
+
+  if (voiceProfileLS) {
+    voiceProfile.value = voiceProfileLS;
+  }
+
+
   const voiceGain = ref(1.5);
+  
+  // Load voiceGain from localstorage
+  const voiceGainLS = localStorage.getItem("voiceGain");
+  if (voiceGainLS) {
+    voiceGain.value = parseFloat(voiceGainLS);
+  }
+
   const AUDIO_CONTEXT = new AudioContext({ sampleRate: SAMPLE_RATE.value });
   const audioStream = AUDIO_CONTEXT.createMediaStreamDestination();
   let bufferSource = null;
@@ -237,6 +253,13 @@ const useRobotStore = defineStore("robot", () => {
    */
 
   const commandsFrom = ref<'app' | 'robot'>("app");
+
+  // Load commandsFrom from localstorage
+  const commandsFromLS = localStorage.getItem("commandsFrom");
+  if (commandsFromLS) {
+    commandsFrom.value = commandsFromLS as 'app' | 'robot';
+  }
+
   const { mutate: sendCommand } = useMutation({
     mutationFn: async (text: string) => {
         return  http({url:"https://commandconversation-kl3exemiua-uc.a.run.app", method: "POST", data:{ text:text, sessionID: "1234" }});
@@ -400,6 +423,7 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
       const uint8Data = new Uint8Array(data);
       console.log("DEBUG: transforming data:", uint8Data);
       const nowBuffering = convertUint8ToFloat32(uint8Data);
+      const originalBuffer = nowBuffering;
       console.log("DEBUG: transformed data:", nowBuffering);
 
       // Calculate the average value of the float32 array
@@ -440,6 +464,24 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
 
       // bufferSource.loop = true;
       bufferSource.start();
+
+      // Try to draw the audio to the canvas
+      const leBeouf = originalBuffer;
+    const canvas = document.getElementById('audio-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    console.log("The data length is:", leBeouf.length);
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height / 2);
+
+    for (let i = 0; i < leBeouf.length; i++) {
+      const x = i;
+      const y = canvas.height / 2 - (leBeouf[i] * 100) ^ 5;
+      ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = '#00FFFF'; // Neon blue color
+    ctx.stroke();
       // bufferSource.onended = () => {
 
       //   setTimeout(() => {
@@ -831,6 +873,13 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
         // This is used to make the robot speak
         useAudioCommand(payload.params.echo);
       }
+      if(payload.payload.driveMode){
+        if(payload.payload.driveMode === "manual"){
+          setState(states.value.manual);
+        } else if(payload.payload.driveMode === "follow"){
+          setState(states.value.yolo);
+        }
+      }
     } else {
       return false;
     }
@@ -858,8 +907,32 @@ scriptProcessor.connect(AUDIO_CONTEXT.destination);
 
       toAudioBuff(res.data.data, (buffer) => {
         console.log("The audio buffer is:", buffer);
+
+        // Add one second of silence to the start and end of the buffer
+        const silenceDuration = AUDIO_CONTEXT.sampleRate; // 1 second of silence
+        const newLength = buffer.length + silenceDuration * 2; // Original length + 1 second silence at start and end
+        const extendedBuffer = AUDIO_CONTEXT.createBuffer(
+          buffer.numberOfChannels,
+          newLength,
+          AUDIO_CONTEXT.sampleRate
+        );
+
+        for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+          const originalData = buffer.getChannelData(channel);
+          const extendedData = extendedBuffer.getChannelData(channel);
+
+          // Fill the start with silence
+          extendedData.set(new Float32Array(silenceDuration), 0);
+
+          // Copy the original data
+          extendedData.set(originalData, silenceDuration);
+
+          // Fill the end with silence
+          extendedData.set(new Float32Array(silenceDuration), silenceDuration + originalData.length);
+        }
+
         const source = AUDIO_CONTEXT.createBufferSource();
-        source.buffer = buffer;
+        source.buffer = extendedBuffer;
 
         // Step 2. Create a media stream destination
         const destination = AUDIO_CONTEXT.createMediaStreamDestination();

@@ -19,13 +19,13 @@
 
         <Divider />
         <p>Voice Profile</p>
-        <Dropdown v-model="robot.voiceProfile" :options="voiceProfiles" optionLabel="name" optionValue="value" placeholder="Select a Voice Profile" />
+        <Dropdown v-model="robot.voiceProfile" :options="voiceProfiles" optionLabel="name" optionValue="value" placeholder="Select a Voice Profile" @change="saveVoiceProfile"/>
         <p>Voice Gain:</p>
-        <InputNumber v-model="robot.voiceGain" mode="decimal" :min="0" :max="1" />
+        <InputNumber v-model="robot.voiceGain" mode="decimal" :min="0" :max="3" @input="saveVoiceGain" />
 
         <Divider />
         <p>Voice commands come from:</p>
-        <Dropdown v-model="robot.commandsFrom" :options="commandsFromOpts" placeholder="Select a source" />
+        <Dropdown v-model="robot.commandsFrom" :options="commandsFromOpts" placeholder="Select a source" @input="saveAppOrRobot" />
 
 				
 			</div>
@@ -82,6 +82,20 @@ const commandsFromOpts = [
   "robot"
 ]
 
+const saveVoiceProfile = (voiceProfile) => {
+  console.log("Saving voice profile", voiceProfile.value);
+  localStorage.setItem("voiceProfile", voiceProfile.value);
+}
+
+const saveVoiceGain = (voiceGain) => {
+  console.log("Saving voice gain", voiceGain);
+  localStorage.setItem("voiceGain", voiceGain.value);
+}
+
+const saveAppOrRobot = (source) => {
+  console.log("Saving voice source", source);
+  localStorage.setItem("commandsFrom", source.value);
+}
 
 </script>
 

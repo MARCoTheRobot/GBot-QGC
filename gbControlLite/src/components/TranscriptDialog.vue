@@ -15,11 +15,11 @@
         </template>
 
         <div class="flex flex-col flex-grow gap-4 overflow-y-auto max-h-96">
-            <div v-if="settings.transcript.messages.length === 0" class="text-center">
+            <div v-if="settings.transcript.messages.length === 0" id="messages-box" class="flex flex-col gap-4 overflow-y-auto max-h-72">
                 <Image :src="Transcript3D" alt="transcript" width="250" />
                 <p class="text-sm italic font-light">{{mode === 'chat' ? 'Send a first message to the robot!':'Waiting for first transcript message'}}</p>
             </div>
-            <div v-else class="flex flex-col gap-4">
+            <div v-else id="transcript-box" class="flex flex-col gap-4 overflow-y-auto max-h-72">
                 <div v-for="transcript in settings.transcript.messages"
                     :key="transcript.id" :class="`flex flex-row justify-${transcript.type === 'user' ? 'end' : 'start'} w-full`">
                     <div class="flex flex-col gap-1">
@@ -150,6 +150,13 @@ watch(transientTranscript, (value) =>{
 else{
     settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "liveTranscription", text: value });
 }   
+
+// Scroll to the bottom of the chat container
+const chatContainer = document.getElementById("transcript-box");
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
 });
 
 /**
@@ -157,19 +164,23 @@ else{
  */
 watch(transcript, (value) => {
     console.log("transcript", value);
-    if(settings.transcript.messages.length > 0 ){
-    const lastMessage = settings.transcript.messages[settings.transcript.messages.length - 1];
-    if(lastMessage.type === "liveTranscription"){
-        settings.transcript.messages[settings.transcript.messages.length - 1].text = value;
-        settings.transcript.messages[settings.transcript.messages.length - 1].type = "finishedTranscription";
-    }
-    else{
+    if (settings.transcript.messages.length > 0) {
+        const lastMessage = settings.transcript.messages[settings.transcript.messages.length - 1];
+        if (lastMessage.type === "liveTranscription") {
+            settings.transcript.messages[settings.transcript.messages.length - 1].text = value;
+            settings.transcript.messages[settings.transcript.messages.length - 1].type = "finishedTranscription";
+        } else {
+            settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "finishedTranscription", text: value });
+        }
+    } else {
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "finishedTranscription", text: value });
     }
-}
-else{
-    settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "finishedTranscription", text: value });
-}   
+
+    // Scroll to the bottom of the chat container
+    const chatContainer = document.getElementById("transcript-box");
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 });
 
 
@@ -182,17 +193,32 @@ const { mutate } = useMutation({
     onMutate: (text: string) => {
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "user", text: nextMessage.value });
         nextMessage.value = "";
+        // Scroll to the bottom of the chat container
+    const chatContainer = document.getElementById("messages-box");
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
     },
     onSuccess: (data) => {
         console.log("data a a a", data);
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: data.statusResponse });
         robot.useAudioCommand(data.statusResponse);
         robot.useHandlePayload(data);
+        // Scroll to the bottom of the chat container
+    const chatContainer = document.getElementById("messages-box");
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
     },
     onError: (error) => {
         console.error("error", error);
         settings.transcript.messages.push({ id: settings.transcript.messages.length + 1, type: "status", text: error.message });
         robot.useAudioCommand(`Sorry, I had an issue with that. Here's why: ${error.message}`);
+        // Scroll to the bottom of the chat container
+    const chatContainer = document.getElementById("messages-box");
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
     }
 
 }
